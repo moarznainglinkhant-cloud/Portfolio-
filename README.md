@@ -6,7 +6,7 @@ A single self-contained HTML page: a Pixel Blast–style WebGL background, a wor
 
 ## Run it
 
-Open `portfolio.html` in a browser. No build step.
+Open `index.html` in a browser. No build step.
 
 ## Edit it
 
