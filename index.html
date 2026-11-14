@@ -240,6 +240,18 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 @keyframes crton{0%{transform:scale(0,.004);filter:brightness(6)}45%{transform:scale(1,.004);filter:brightness(3)}100%{transform:scale(1,1);filter:brightness(1)}}
 .panic{color:#f2f2f2}.panic b{color:var(--z-red);font-weight:700}
 .ok{color:var(--z-green);font-weight:700}
+/* full-screen CRT blackout (sudo rm -rf /) */
+.blackout{position:fixed;inset:0;z-index:2147483647;cursor:none;background:linear-gradient(#000,#000) top/100% 0 no-repeat,linear-gradient(#000,#000) bottom/100% 0 no-repeat}
+.blackout i{position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:#fff;box-shadow:0 0 12px 3px rgba(255,255,255,.8),0 0 40px 8px rgba(180,220,255,.45);opacity:0}
+.blackout.bo-off{animation:boShut .32s cubic-bezier(.7,0,.9,.4) forwards}
+.blackout.bo-off i{animation:boLine .34s .3s ease-in forwards}
+.blackout.bo-on{background-size:100% 50.5%,100% 50.5%;animation:boOpen .45s cubic-bezier(.2,.7,.3,1) forwards}
+.blackout.bo-on i{animation:boFlash .18s ease-out}
+@keyframes boShut{to{background-size:100% 50.5%,100% 50.5%}}
+@keyframes boLine{0%{opacity:1;transform:scaleX(1)}70%{opacity:1;transform:scaleX(.02)}100%{opacity:0;transform:scaleX(0)}}
+@keyframes boOpen{to{background-size:100% 0,100% 0}}
+@keyframes boFlash{0%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.blackout.bo-off,.blackout.bo-on,.blackout i{animation:none}.blackout.bo-off{background:#000}.blackout i{display:none}}
 .train{white-space:pre;display:inline-block;line-height:1.2;color:var(--z-yellow);animation:choo 4.2s linear forwards}
 @keyframes choo{from{transform:translateX(min(900px,85vw))}to{transform:translateX(-110%)}}
 .bigok{font-weight:800;color:var(--z-green);letter-spacing:.2em}
@@ -786,11 +798,29 @@ const T = (()=>{
   const sleep=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
   const GAMES=[["sudo rm -rf /",'<span class="c-r">sudo rm -rf /</span>'],[":(){ :|:& };:"],["sl"],["cowsay"],["fortune"],["hack"],["htop"],["theme"],["brew install coffee"],["sudo make me a sandwich"],["git blame"],["shutdown"]];
 
-  async function powerCycle(pre=[]){
+  const boWait=ms=>new Promise(r=>setTimeout(r,ms));
+  async function screenOff(){
+    let o=document.querySelector('.blackout');
+    if(!o){ o=document.createElement('div'); o.className='blackout'; o.innerHTML='<i></i>'; document.body.appendChild(o); }
+    o.classList.remove('bo-on'); o.classList.add('bo-off');
+    await boWait(reduce?0:700);
+  }
+  async function screenOn(){
+    const o=document.querySelector('.blackout'); if(!o) return;
+    o.classList.replace('bo-off','bo-on');
+    await boWait(reduce?0:450); o.remove();
+  }
+  async function powerCycle(pre=[],full=false){
     for(const l of pre) print(l);
     await sleep(500);
-    body.classList.add('poweroff'); await sleep(reduce?0:1300);
-    out.innerHTML=""; body.classList.remove('poweroff'); body.classList.add('poweron');
+    if(full){
+      await screenOff(); out.innerHTML="";
+      await boWait(1800);               // how long the whole screen stays black
+      await screenOn(); body.classList.add('poweron');
+    }else{
+      body.classList.add('poweroff'); await sleep(reduce?0:1300);
+      out.innerHTML=""; body.classList.remove('poweroff'); body.classList.add('poweron');
+    }
     const boot=["Reached target Restoring from backup","Started git reset --hard origin/main","Mounted /home/"+ME.handle,"Started zsh + oh-my-zsh","Reached target Portfolio Shell"];
     for(const b of boot){ print(`[<span class="ok">  OK  </span>] ${esc(b)}.`); await sleep(230); }
     body.classList.remove('poweron'); print("");
@@ -818,8 +848,8 @@ const T = (()=>{
     for(const k of K){ print(`<span class="panic"><span class="c-d">[${t.toFixed(6).padStart(11)}]</span> ${k}</span>`); t+=.00004+Math.random()*.00003; await sleep(90); }
     term.classList.remove('crash'); await sleep(1400);
     window.__bg&&__bg.reset(); vim('NORMAL',null,'');
-    await powerCycle();
-    gap(`<span class="c-g">Phew.</span> Everything's on GitHub. <span class="c-d">Try that again and I'm telling the TA.</span>`);
+    await powerCycle([],true);
+    gap(`<span class="c-g">Phew.</span> Everything's on GitHub. <span class="c-d">Run this command on your terminal to speed your mac</span>`);
   }
 
   const C={
