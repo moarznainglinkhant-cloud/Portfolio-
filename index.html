@@ -232,6 +232,38 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 .nf-logo.txt{line-height:1.3;font-size:14px}
 .nf-info{white-space:pre;line-height:1.55}
 @media (max-width:640px){.nf-logo{font-size:9px}.nf{gap:14px}}
+
+/* ---------- tech stack marquee ---------- */
+.stack-sec{padding:110px 0 40px}
+.marquees{margin-top:44px;display:grid;gap:22px}
+.marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+.mtrack{display:flex;gap:14px;width:max-content;animation:marq var(--dur,46s) linear infinite}
+.marquee.rev .mtrack{animation-direction:reverse}
+.marquee:hover .mtrack{animation-play-state:paused}
+@keyframes marq{to{transform:translateX(-50%)}}
+.tech{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:14px 20px 14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);
+  color:rgba(var(--ph),.85);transition:color .25s,border-color .25s,background .25s,transform .25s}
+.tech svg{width:30px;height:30px;fill:currentColor;flex:none}
+.tech .bdg{width:30px;height:30px;display:grid;place-items:center;border-radius:7px;border:1.5px solid currentColor;font:600 9.5px var(--mono);letter-spacing:-.02em;flex:none}
+.tech span.n{font:13px var(--mono);color:var(--muted);transition:color .25s}
+.tech:hover{color:var(--c);border-color:color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 9%,transparent);transform:translateY(-3px)}
+.tech:hover span.n{color:#fff}
+@media (prefers-reduced-motion:reduce){.mtrack{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.marquee{-webkit-mask-image:none;mask-image:none}.mtrack .dup{display:none}}
+@media (max-width:640px){.tech{padding:10px 14px 10px 12px}.tech svg,.tech .bdg{width:24px;height:24px}.mtrack{gap:10px}}
+
+/* ---------- contact icons ---------- */
+.cicons{margin-top:56px;display:flex;flex-wrap:wrap;gap:18px}
+.cicon{--c:#fff;display:flex;flex-direction:column;align-items:center;gap:12px;text-decoration:none;color:#EDEDEF;background:none;border:0;padding:0;cursor:pointer;font:inherit}
+.cicon .ib{width:86px;height:86px;border-radius:24px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);
+  transition:background .3s,border-color .3s,transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.cicon svg{width:36px;height:36px;fill:currentColor;transition:color .3s}
+.cicon .cl{font:12.5px var(--mono);color:var(--muted);transition:color .3s}
+.cicon:hover .ib,.cicon:focus-visible .ib{background:color-mix(in srgb,var(--c) 14%,transparent);border-color:color-mix(in srgb,var(--c) 55%,transparent);transform:translateY(-5px);box-shadow:0 14px 40px -12px color-mix(in srgb,var(--c) 60%,transparent)}
+.cicon:hover svg{color:var(--c)}
+.cicon:hover .cl{color:#fff}
+.cicon.soon{opacity:.45;cursor:default}.cicon.soon:hover .ib{transform:none;box-shadow:none}
+@media (max-width:640px){.cicons{gap:12px;justify-content:space-between}.cicon .ib{width:68px;height:68px;border-radius:20px}.cicon svg{width:28px;height:28px}}
+.hero{position:relative}
 </style>
 </head>
 <body>
@@ -300,11 +332,19 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 </section>
 
 <!-- CONTACT -->
+<section class="stack-sec" id="stack">
+  <div class="wrap">
+    <div class="label" data-reveal><b>03</b> stack</div>
+    <h2 data-reveal>What I build with.</h2>
+  </div>
+  <div class="marquees" id="marquees" aria-label="Tech stack"></div>
+</section>
+
 <section class="contact-sec" id="contact">
   <div class="wrap">
-    <div class="label" data-reveal><b>03</b> contact</div>
+    <div class="label" data-reveal><b>04</b> contact</div>
     <p class="big" data-reveal>Let's build<br><span class="name" data-text="something.">something.</span></p>
-    <div class="clist" id="clist"></div>
+    <div class="cicons" id="clist"></div>
     <footer>
       <span><span class="z-arrow">➜</span>  <span class="z-dir">~</span> exit</span>
       <span>© 2026 Moarz Naing Lin Khant</span>
@@ -347,24 +387,32 @@ const ME = {
     "[What you're building or learning right now.]"
   ],
   skills: {
-    languages: ["[language]", "[language]", "[language]"],
-    tools:     ["git", "linux", "zsh", "[tool]"],
+    languages: ["Python", "C", "C++", "JavaScript", "HTML/CSS", "SQL", "VB.NET", "VBA"],
+    tools:     ["git", "GitHub Actions", "Streamlit", "SQLite", "Google Sheets", "Power Automate", "MS Office"],
     learning:  ["[something you're learning]"]
   },
+  // tech-stack marquee — icon: a logo key (see ICONS), or badge: short text shown in a tile instead
+  stack: [
+    [ {name:"Python",icon:"python"}, {name:"C",icon:"c"}, {name:"C++",icon:"cpp"}, {name:"JavaScript",icon:"js"}, {name:"HTML",icon:"html"},
+      {name:"CSS",icon:"css"}, {name:"SQL",badge:"SQL"}, {name:"VB.NET",icon:"dotnet"}, {name:"VBA",icon:"vba"} ],
+    [ {name:"Git",icon:"git"}, {name:"GitHub",icon:"github"}, {name:"GitHub Actions",icon:"actions"}, {name:"Streamlit",icon:"streamlit"},
+      {name:"SQLite",icon:"sqlite"}, {name:"Google Sheets",icon:"sheets"}, {name:"Excel",badge:".xlsx"}, {name:"Word",badge:".docx"},
+      {name:"PowerPoint",badge:".pptx"}, {name:"Power Automate",badge:"flow"}, {name:"REST APIs",badge:"{ }"} ]
+  ],
   editor: "[nvim]",
   os: "[your distro]",
   // image: optional data: URI for a screenshot (remote image URLs won't load in this preview)
   projects: [
-    { name:"MCC Website",     year:"2026",   desc:"The club's website: events on a hand-drawn timeline, a team wheel, a photo gallery with a 'Surprise Me' honeycomb shuffle, a member-card maker with English and Burmese names, and 3D registration tickets you can tilt and flip.", tags:["[tech]","[tech]","[tech]"], code:"[repo-link]", demo:"[live-link]", glyph:"က",   colors:["#ffb454","#7a1238","#140006"] },
+    { name:"MCC Website",     year:"2026",   desc:"Built from scratch for the UofT Myanmar Culture Club: a Google Sheets–powered event feed that officers update without touching code, deployed on a custom domain. Event sign-ups doubled after launch.", tags:["HTML","CSS","JavaScript","Google Sheets"], code:"", demo:"https://uoftmcc.ca/", glyph:"က",   colors:["#ffb454","#7a1238","#140006"] },
     { name:"[Project Two]",   year:"[2026]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]"],         code:"[repo-link]", demo:"", glyph:"$_",  colors:["#57c7ff","#2a1f6e","#05010f"] },
     { name:"[Project Three]", year:"[2025]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]","[tech]"], code:"[repo-link]", demo:"", glyph:"{ }", colors:["#ff7a59","#7a1238","#140006"] },
     { name:"[Project Four]",  year:"[2025]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]"],         code:"[repo-link]", demo:"", glyph:"</>", colors:["#c6ff6b","#1d5a4a","#00110c"] },
   ],
   contact: [
-    { key:"email",    label:"[your-email]@mail.utoronto.ca", href:"", copy:true },
-    { key:"github",   label:"github.com/[username]",         href:"https://github.com/" },
-    { key:"linkedin", label:"linkedin.com/in/[username]",    href:"https://www.linkedin.com/" },
-    { key:"resume",   label:"resume.pdf",                    href:"" },
+    { key:"email",    label:"moarz.linkhant@mail.utoronto.ca",            href:"mailto:moarz.linkhant@mail.utoronto.ca", copy:true, icon:"mail" },
+    { key:"github",   label:"github.com/moarznainglinkhant-cloud",         href:"https://github.com/moarznainglinkhant-cloud", icon:"github" },
+    { key:"linkedin", label:"linkedin.com/in/moarz-naing-lin-khant",       href:"https://www.linkedin.com/in/moarz-naing-lin-khant", icon:"linkedin" },
+    { key:"resume",   label:"resume.pdf",                                  href:"", icon:"doc" },
   ]
 };
 /* ===================================================================== */
@@ -986,7 +1034,7 @@ const Stack=(()=>{
   const cards=P.map((p,i)=>{
     const c=document.createElement('article'); c.className='card';
     c.setAttribute('aria-label',`${p.name}, project ${i+1} of ${P.length}`);
-    const links=[ isUrl(p.code)?`<a href="${esc(p.code)}" target="_blank" rel="noopener">→ source</a>`:`<span class="c-d">→ source ${esc(p.code||"")}</span>`,
+    const links=[ isUrl(p.code)?`<a href="${esc(p.code)}" target="_blank" rel="noopener">→ source</a>`:(p.code?`<span class="c-d">→ source ${esc(p.code)}</span>`:""),
                   isUrl(p.demo)?`<a href="${esc(p.demo)}" target="_blank" rel="noopener">→ live</a>`:"" ].join("");
     c.innerHTML=`<div class="art">${art(p,i)}</div><div class="meta"><div class="row"><span>${String(i+1).padStart(2,"0")}</span><span>${esc(p.year)}</span></div><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><div class="tags">${p.tags.map(t=>`<span>${esc(t)}</span>`).join("")}</div><div class="links">${links}</div></div>`;
     el.appendChild(c); return c;
@@ -1066,25 +1114,42 @@ const Stack=(()=>{
   return {goTo,next,prev};
 })();
 
+const ICONS={"python":{"vb":"0 0 24 24","p":["M11.858 0c-.978.005-1.913.088-2.736.234C6.7.662 6.26 1.558 6.26 3.21v2.182h5.725v.727H4.111c-1.664 0-3.121 1-3.577 2.903-.526 2.181-.549 3.542 0 5.82.407 1.694 1.379 2.902 3.043 2.902h1.969v-2.616c0-1.89 1.635-3.557 3.576-3.557h5.72c1.591 0 2.862-1.31 2.862-2.91v-5.45c0-1.553-1.309-2.718-2.863-2.977A18 18 0 0 0 11.858 0M8.762 1.755c.591 0 1.074.491 1.074 1.095 0 .601-.483 1.087-1.074 1.087A1.08 1.08 0 0 1 7.688 2.85c0-.604.48-1.095 1.074-1.095m9.656 4.364v2.543c0 1.971-1.671 3.63-3.577 3.63H9.122c-1.566 0-2.862 1.34-2.862 2.91v5.452c0 1.551 1.349 2.464 2.862 2.91 1.813.532 3.55.628 5.72 0 1.44-.418 2.862-1.258 2.862-2.91V18.47h-5.719v-.727h8.582c1.664 0 2.284-1.16 2.862-2.903.598-1.793.573-3.518 0-5.819-.41-1.656-1.196-2.903-2.862-2.903zm-3.216 13.807a1.08 1.08 0 0 1 1.074 1.088c0 .604-.48 1.094-1.074 1.094-.592 0-1.075-.49-1.075-1.094 0-.601.483-1.088 1.075-1.088"],"hex":"#3776AB"},"c":{"vb":"0 0 24 24","p":["M16.5921 9.1962s-.354-3.298-3.627-3.39c-3.2741-.09-4.9552 2.474-4.9552 6.14 0 3.6651 1.858 6.5972 5.0451 6.5972 3.184 0 3.5381-3.665 3.5381-3.665l6.1041.365s.36 3.31-2.196 5.836c-2.552 2.5241-5.6901 2.9371-7.8762 2.9201-2.19-.017-5.2261.034-8.1602-2.97-2.938-3.0101-3.436-5.9302-3.436-8.8002 0-2.8701.556-6.6702 4.047-9.5502C7.444.72 9.849 0 12.254 0c10.0422 0 10.7172 9.2602 10.7172 9.2602z"],"hex":"#c7d4e2"},"cpp":{"vb":"0 0 24 24","p":["M22.394 6c-.167-.29-.398-.543-.652-.69L12.926.22c-.509-.294-1.34-.294-1.848 0L2.26 5.31c-.508.293-.923 1.013-.923 1.6v10.18c0 .294.104.62.271.91.167.29.398.543.652.69l8.816 5.09c.508.293 1.34.293 1.848 0l8.816-5.09c.254-.147.485-.4.652-.69.167-.29.27-.616.27-.91V6.91c.003-.294-.1-.62-.268-.91zM12 19.11c-3.92 0-7.109-3.19-7.109-7.11 0-3.92 3.19-7.11 7.11-7.11a7.133 7.133 0 016.156 3.553l-3.076 1.78a3.567 3.567 0 00-3.08-1.78A3.56 3.56 0 008.444 12 3.56 3.56 0 0012 15.555a3.57 3.57 0 003.08-1.778l3.078 1.78A7.135 7.135 0 0112 19.11zm7.11-6.715h-.79v.79h-.79v-.79h-.79v-.79h.79v-.79h.79v.79h.79zm2.962 0h-.79v.79h-.79v-.79h-.79v-.79h.79v-.79h.79v.79h.79z"],"hex":"#00599C"},"js":{"vb":"0 0 24 24","p":["M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"],"hex":"#F7DF1E"},"html":{"vb":"0 0 24 24","p":["M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"],"hex":"#E34F26"},"css":{"vb":"0 0 24 24","p":["M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"],"hex":"#a07fe0"},"sqlite":{"vb":"0 0 24 24","p":["M21.678.521c-1.032-.92-2.28-.55-3.513.544a8.71 8.71 0 0 0-.547.535c-2.109 2.237-4.066 6.38-4.674 9.544.237.48.422 1.093.544 1.561a13.044 13.044 0 0 1 .164.703s-.019-.071-.096-.296l-.05-.146a1.689 1.689 0 0 0-.033-.08c-.138-.32-.518-.995-.686-1.289-.143.423-.27.818-.376 1.176.484.884.778 2.4.778 2.4s-.025-.099-.147-.442c-.107-.303-.644-1.244-.772-1.464-.217.804-.304 1.346-.226 1.478.152.256.296.698.422 1.186.286 1.1.485 2.44.485 2.44l.017.224a22.41 22.41 0 0 0 .056 2.748c.095 1.146.273 2.13.5 2.657l.155-.084c-.334-1.038-.47-2.399-.41-3.967.09-2.398.642-5.29 1.661-8.304 1.723-4.55 4.113-8.201 6.3-9.945-1.993 1.8-4.692 7.63-5.5 9.788-.904 2.416-1.545 4.684-1.931 6.857.666-2.037 2.821-2.912 2.821-2.912s1.057-1.304 2.292-3.166c-.74.169-1.955.458-2.362.629-.6.251-.762.337-.762.337s1.945-1.184 3.613-1.72C21.695 7.9 24.195 2.767 21.678.521m-18.573.543A1.842 1.842 0 0 0 1.27 2.9v16.608a1.84 1.84 0 0 0 1.835 1.834h9.418a22.953 22.953 0 0 1-.052-2.707c-.006-.062-.011-.141-.016-.2a27.01 27.01 0 0 0-.473-2.378c-.121-.47-.275-.898-.369-1.057-.116-.197-.098-.31-.097-.432 0-.12.015-.245.037-.386a9.98 9.98 0 0 1 .234-1.045l.217-.028c-.017-.035-.014-.065-.031-.097l-.041-.381a32.8 32.8 0 0 1 .382-1.194l.2-.019c-.008-.016-.01-.038-.018-.053l-.043-.316c.63-3.28 2.587-7.443 4.8-9.791.066-.069.133-.128.198-.194Z"],"hex":"#5fb4d8"},"streamlit":{"vb":"0 0 24 24","p":["M16.673 11.32l6.862-3.618c.233-.136.554.12.442.387L20.463 17.1zm-8.556-.229l3.473-5.187c.203-.328.578-.316.793-.028l7.886 11.75zm-3.375 7.25c-.28 0-.835-.284-.993-.716l-3.72-9.46c-.118-.331.139-.614.48-.464l19.474 10.306c-.149.147-.453.337-.72.334z"],"hex":"#FF4B4B"},"actions":{"vb":"0 0 24 24","p":["M10.984 13.836a.5.5 0 0 1-.353-.146l-.745-.743a.5.5 0 1 1 .706-.708l.392.391 1.181-1.18a.5.5 0 0 1 .708.707l-1.535 1.533a.504.504 0 0 1-.354.146zm9.353-.147l1.534-1.532a.5.5 0 0 0-.707-.707l-1.181 1.18-.392-.391a.5.5 0 1 0-.706.708l.746.743a.497.497 0 0 0 .706-.001zM4.527 7.452l2.557-1.585A1 1 0 0 0 7.09 4.17L4.533 2.56A1 1 0 0 0 3 3.406v3.196a1.001 1.001 0 0 0 1.527.85zm2.03-2.436L4 6.602V3.406l2.557 1.61zM24 12.5c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3h-2.08a3.503 3.503 0 0 1-3.46 3 3.502 3.502 0 0 1-3.46-3h-.558c-.972 0-1.85-.399-2.482-1.042V17c0 1.654 1.346 3 3 3h.04c.244-1.693 1.7-3 3.46-3 1.93 0 3.5 1.57 3.5 3.5S13.43 24 11.5 24a3.502 3.502 0 0 1-3.46-3H8c-2.206 0-4-1.794-4-4V9.899A5.008 5.008 0 0 1 0 5c0-2.757 2.243-5 5-5s5 2.243 5 5a5.005 5.005 0 0 1-4.952 4.998A2.482 2.482 0 0 0 7.482 12h.558c.244-1.693 1.7-3 3.46-3a3.502 3.502 0 0 1 3.46 3h2.08a3.503 3.503 0 0 1 3.46-3c1.93 0 3.5 1.57 3.5 3.5zm-15 8c0 1.378 1.122 2.5 2.5 2.5s2.5-1.122 2.5-2.5-1.122-2.5-2.5-2.5S9 19.122 9 20.5zM5 9c2.206 0 4-1.794 4-4S7.206 1 5 1 1 2.794 1 5s1.794 4 4 4zm9 3.5c0-1.378-1.122-2.5-2.5-2.5S9 11.122 9 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm9 0c0-1.378-1.122-2.5-2.5-2.5S18 11.122 18 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm-13 8a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm2 0a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm12 0c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3.002c-.007.001-.013.005-.021.005l-.506.017h-.017a.5.5 0 0 1-.016-.999l.506-.017c.018-.002.035.006.052.007A3.503 3.503 0 0 1 20.5 17c1.93 0 3.5 1.57 3.5 3.5zm-1 0c0-1.378-1.122-2.5-2.5-2.5S18 19.122 18 20.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5z"],"hex":"#4aa3ff"},"git":{"vb":"0 0 24 24","p":["M13.09 23.549a1.54 1.54 0 0 1-2.18 0L.451 13.089a1.54 1.54 0 0 1 0-2.179l7.191-7.19 2.733 2.733a1.85 1.85 0 0 0 .964 2.326v6.66a1.849 1.849 0 1 0 1.54 0V8.957l2.508 2.508a1.85 1.85 0 1 0 1.09-1.09l-2.634-2.634a1.85 1.85 0 0 0-2.378-2.377L8.73 2.63 10.91.451a1.54 1.54 0 0 1 2.179 0l10.459 10.46a1.54 1.54 0 0 1 0 2.179z"],"hex":"#F03C2E"},"github":{"vb":"0 0 24 24","p":["M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"],"hex":"#ffffff"},"sheets":{"vb":"0 0 24 24","p":["M11.318 12.545H7.91v-1.909h3.41v1.91zM14.728 0v6h6l-6-6zm1.363 10.636h-3.41v1.91h3.41v-1.91zm0 3.273h-3.41v1.91h3.41v-1.91zM20.727 6.5v15.864c0 .904-.732 1.636-1.636 1.636H4.909a1.636 1.636 0 0 1-1.636-1.636V1.636C3.273.732 4.005 0 4.909 0h9.318v6.5h6.5zm-3.273 2.773H6.545v7.909h10.91v-7.91zm-6.136 4.636H7.91v1.91h3.41v-1.91z"],"hex":"#34A853"},"dotnet":{"vb":"0 0 24 24","p":["M24 8.77h-2.468v7.565h-1.425V8.77h-2.462V7.53H24zm-6.852 7.565h-4.821V7.53h4.63v1.24h-3.205v2.494h2.953v1.234h-2.953v2.604h3.396zm-6.708 0H8.882L4.78 9.863a2.896 2.896 0 0 1-.258-.51h-.036c.032.189.048.592.048 1.21v5.772H3.157V7.53h1.659l3.965 6.32c.167.261.275.442.323.54h.024c-.04-.233-.06-.629-.06-1.185V7.529h1.372zm-8.703-.693a.868.829 0 0 1-.869.829.868.829 0 0 1-.868-.83.868.829 0 0 1 .868-.828.868.829 0 0 1 .869.829Z"],"hex":"#8f74ff"},"linkedin":{"vb":"0 0 128 128","p":["M116 3H12a8.91 8.91 0 00-9 8.8v104.42a8.91 8.91 0 009 8.78h104a8.93 8.93 0 009-8.81V11.77A8.93 8.93 0 00116 3zM39.17 107H21.06V48.73h18.11zm-9-66.21a10.5 10.5 0 1110.49-10.5 10.5 10.5 0 01-10.54 10.48zM107 107H88.89V78.65c0-6.75-.12-15.44-9.41-15.44s-10.87 7.36-10.87 15V107H50.53V48.73h17.36v8h.24c2.42-4.58 8.32-9.41 17.13-9.41C103.6 47.28 107 59.35 107 75z"],"hex":"#0A66C2"},"vba":{"vb":"0 0 128 128","p":["M64 0A64 64 0 000 64a64 64 0 0064 64 64 64 0 0064-64A64 64 0 0064 0zm-3.76 38.7l6.34.1L48 89.202h-6.58L23.14 38.8h6.579l14 40a23.74 23.74 0 011.02 4.46h.141a22 22 0 011.119-4.56zm13.6.1h14.34A15.68 15.68 0 0198.54 42a10.34 10.34 0 013.84 8.34 12.26 12.26 0 01-2.38 7.44 12.52 12.52 0 01-6.4 4.501v.139a12.82 12.82 0 018.16 3.84 11.84 11.84 0 013.06 8.461 13.18 13.18 0 01-4.64 10.48 17.28 17.28 0 01-11.7 4H73.84zm12.7 5.26l-6.7.06V60.4h5.999a11.48 11.48 0 007.58-2.4 8.14 8.14 0 002.781-6.6c0-4.893-3.22-7.34-9.66-7.34zm-6.7 21.641v18.14h8a12 12 0 008-2.46 8.42 8.42 0 002.86-6.74c0-5.947-4.053-8.92-12.16-8.92z"],"hex":"#945DB7"},"mail":{"vb":"0 0 24 24","p":["M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm1 2.2V17h16V7.2l-8 5.6-8-5.6ZM5.4 7l6.6 4.6L18.6 7H5.4Z"],"hex":"#FF6AC1"},"doc":{"vb":"0 0 24 24","p":["M6 2h8.6L20 7.4V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.8V8h4.2L14 3.8ZM7 12h10v1.6H7V12Zm0 3.4h10V17H7v-1.6Zm0-6.8h5v1.6H7V8.6Z"],"hex":"#9AEDFE"}};
+const svgIcon=k=>{const i=ICONS[k]; return i?`<svg viewBox="${i.vb}" aria-hidden="true">${i.p.map(d=>`<path d="${d}"/>`).join("")}</svg>`:""};
+
+/* ---------------- tech stack marquee ---------------- */
+(function stack(){
+  const root=$('#marquees');
+  ME.stack.forEach((row,ri)=>{
+    const one=row.map(t=>{
+      const c=t.icon&&ICONS[t.icon]?ICONS[t.icon].hex:"#B497CF";
+      const mark=t.icon?svgIcon(t.icon):`<span class="bdg">${esc(t.badge||t.name.slice(0,3))}</span>`;
+      return `<div class="tech" style="--c:${c}" title="${esc(t.name)}">${mark}<span class="n">${esc(t.name)}</span></div>`;
+    }).join("");
+    const m=document.createElement('div'); m.className='marquee'+(ri%2?' rev':'');
+    // the row is repeated so the loop is seamless (track slides by exactly half its width)
+    m.innerHTML=`<div class="mtrack" style="--dur:${38+ri*10}s">${one}<div class="dup" style="display:contents" aria-hidden="true">${one}</div></div>`;
+    root.appendChild(m);
+  });
+  if(hasG&&!reduce&&window.ScrollTrigger) gsap.from('#marquees .marquee',{opacity:0,y:30,duration:1,stagger:.12,ease:"expo.out",scrollTrigger:{trigger:'#marquees',start:"top 88%"}});
+})();
+
 /* ---------------- contact ---------------- */
 (function contact(){
   const list=$('#clist');
   const toast=msg=>{const t=$('#toast');t.textContent=msg; if(hasG){gsap.killTweensOf(t);gsap.fromTo(t,{opacity:0,y:20,xPercent:-50,x:0},{opacity:1,y:0,duration:.35,ease:"power3.out"});gsap.to(t,{opacity:0,y:10,delay:1.8,duration:.4})}else{t.style.opacity=1;setTimeout(()=>t.style.opacity=0,2000)}};
   ME.contact.forEach(c=>{
-    let el;
-    if(c.copy){
-      el=document.createElement('button'); el.className='citem'; el.type='button';
-      el.innerHTML=`<span class="k">${esc(c.key)}</span><span class="v">${esc(c.label)}</span><span class="go">copy ⧉</span>`;
-      el.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(c.label);toast("✔ copied to clipboard")}catch(_){toast(c.label)}});
-    } else {
-      el=document.createElement(isUrl(c.href)?'a':'div'); el.className='citem';
-      if(isUrl(c.href)){el.href=c.href;el.target="_blank";el.rel="noopener"}
-      el.innerHTML=`<span class="k">${esc(c.key)}</span><span class="v">${esc(c.label)}</span><span class="go">${isUrl(c.href)?"open ↗":"soon"}</span>`;
-    }
+    const live=c.copy||isUrl(c.href);
+    const el=document.createElement(c.copy?'button':(live?'a':'div'));
+    el.className='cicon'+(live?'':' soon'); el.style.setProperty('--c',(ICONS[c.icon]||{}).hex||'#fff');
+    el.setAttribute('aria-label',`${c.key}: ${c.label}`); el.title=c.copy?`${c.label} — click to copy`:(live?c.label:`${c.key} — coming soon`);
+    if(c.copy){ el.type='button'; el.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(c.label);toast("✔ copied "+c.label)}catch(_){location.href=c.href||("mailto:"+c.label)}}); }
+    else if(live){ el.href=c.href; el.target="_blank"; el.rel="noopener"; }
+    el.innerHTML=`<span class="ib">${svgIcon(c.icon)}</span><span class="cl">${esc(c.key)}${live?"":" · soon"}</span>`;
     list.appendChild(el);
   });
   if(hasG&&!reduce&&window.ScrollTrigger)
-    gsap.from('#clist .citem',{y:30,opacity:0,duration:.9,ease:"expo.out",stagger:.08,scrollTrigger:{trigger:'#clist',start:"top 85%"}});
+    gsap.from('#clist .cicon',{y:30,opacity:0,duration:.9,ease:"expo.out",stagger:.08,scrollTrigger:{trigger:'#clist',start:"top 90%"}});
 })();
 
 /* hero "Open the shell" → focus terminal after scroll */
@@ -1094,7 +1159,7 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
   const gut=document.getElementById('vgut'), mode=document.getElementById('vmode'), file=document.getElementById('vfile'),
         pct=document.getElementById('vpct'), pos=document.getElementById('vpos'), cmd=document.getElementById('vcmd');
   const LH=22, BUF=84; // pretend buffer length; lines past it show ~
-  const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['contact','~/moarz/contact.txt']];
+  const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['stack','~/moarz/stack.json'],['contact','~/moarz/contact.txt']];
   let ticking=false;
   function draw(){
     ticking=false;
