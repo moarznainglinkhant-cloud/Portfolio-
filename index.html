@@ -294,18 +294,18 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 #vstat{background:linear-gradient(rgba(var(--ph),.09),rgba(var(--ph),.09)),#050406;border-top:1px solid rgba(var(--ph),.14)}
 #vcmd{left:0;right:0;padding:0 10px;background:#050406}
 
-/* ---------- section nav ---------- */
-.snav{position:fixed;z-index:40;top:14px;right:clamp(14px,3vw,28px);display:flex;gap:2px;padding:4px;border-radius:999px;
-  font:12.5px var(--mono);background:rgba(8,6,10,.72);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.snav a{display:flex;align-items:center;min-height:32px;padding:0 13px;border-radius:999px;color:var(--muted);text-decoration:none;transition:color .2s,background .2s}
-.snav a:hover{color:#fff}
-.snav a[aria-current]{color:#0a0710;background:rgba(var(--ph),.9)}
-html.vim-trap .snav{display:none}
-@media (max-width:560px){.snav{left:50%;right:auto;transform:translateX(-50%);top:10px;font-size:12px}.snav a{padding:0 11px;min-height:36px}}
+/* ---------- statusline doubles as section nav (vim buffer tabs) ---------- */
+#vstat{--sl:22px;height:var(--sl);line-height:var(--sl)}
+#vstat a{pointer-events:auto;padding:0 10px;color:rgba(var(--ph),.62);text-decoration:none;transition:color .2s,background .2s}
+#vstat a:hover{color:#fff;background:rgba(var(--ph),.12)}
+#vstat a[aria-current]{color:#fff;background:rgba(var(--ph),.24);text-shadow:none}
+#vstat a:focus-visible{outline-offset:-2px}
+@media (max-width:720px){#vstat{--sl:34px}#vstat a{padding:0 9px}}
+@media (max-width:420px){#vstat #vpct{display:none}}
 
 /* ---------- keyboard focus ---------- */
 a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.round:focus-visible,.term-body .run:focus-visible{outline:2px solid var(--z-cyan);outline-offset:3px}
-.btn:focus-visible,.snav a:focus-visible{outline-offset:2px}
+.btn:focus-visible{outline-offset:2px}
 .card .links a:focus-visible{border-radius:4px}
 .cicon:focus-visible{outline:none}
 .cicon:focus-visible .ib{outline:2px solid var(--z-cyan);outline-offset:3px}
@@ -317,13 +317,6 @@ a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.rou
 <canvas id="bg" aria-hidden="true"></canvas>
 <div id="shade" aria-hidden="true"></div>
 <div id="grain" aria-hidden="true"></div>
-
-<nav class="snav" id="snav" aria-label="Sections">
-  <a href="#top" data-sec="top" aria-current="true">home</a>
-  <a href="#shell" data-sec="shell">terminal</a>
-  <a href="#projects" data-sec="projects">projects</a>
-  <a href="#contact" data-sec="contact">contact</a>
-</nav>
 
 <div class="page">
 
@@ -405,7 +398,7 @@ a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.rou
 
 <div class="toast" id="toast" role="status"></div>
 <div class="vim" id="vgut" aria-hidden="true"></div>
-<div class="vim" id="vstat" aria-hidden="true"><span class="mode" id="vmode">NORMAL</span><span class="seg hide-s"> main</span><span class="seg" id="vfile">~/moarz/hero.md</span><span class="sp"></span><span class="seg hide-s">utf-8</span><span class="seg hide-s">unix</span><span class="seg" id="vpct">Top</span><span class="seg" id="vpos">1:1</span></div>
+<nav class="vim" id="vstat" aria-label="Sections"><span class="mode" id="vmode" aria-hidden="true">NORMAL</span><span class="seg hide-s" aria-hidden="true"> main</span><a href="#top" data-sec="top" aria-current="true">hero<span class="hide-s">.md</span></a><a href="#shell" data-sec="shell">shell<span class="hide-s">.zsh</span></a><a href="#projects" data-sec="projects">projects<span class="hide-s">/</span></a><a href="#contact" data-sec="contact">contact<span class="hide-s">.txt</span></a><span class="sp"></span><span class="seg hide-s" aria-hidden="true">utf-8</span><span class="seg hide-s" aria-hidden="true">unix</span><span class="seg" id="vpct" aria-hidden="true">Top</span><span class="seg" id="vpos" aria-hidden="true">1:1</span></nav>
 <div class="vim" id="vcmd" aria-hidden="true"></div>
 
 
@@ -1368,12 +1361,12 @@ const svgIcon=k=>{const i=ICONS[k]; return i?`<svg viewBox="${i.vb}" aria-hidden
 document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout(()=>$('#tin').focus({preventScroll:true}),900));
 (function vim(){
   /* ---- vim ghost: relativenumber gutter, statusline, cmdline ---- */
-  const gut=document.getElementById('vgut'), mode=document.getElementById('vmode'), file=document.getElementById('vfile'),
+  const gut=document.getElementById('vgut'), mode=document.getElementById('vmode'),
         pct=document.getElementById('vpct'), pos=document.getElementById('vpos'), cmd=document.getElementById('vcmd');
   const LH=22, BUF=84; // pretend buffer length; lines past it show ~
   const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['contact','~/moarz/contact.txt']];
-  const navLinks=[...document.querySelectorAll('#snav a')];
-  navLinks.forEach(a=>a.addEventListener('click',e=>{const el=document.getElementById(a.dataset.sec); if(!el) return; e.preventDefault();
+  const navLinks=[...document.querySelectorAll('#vstat a')];
+  navLinks.forEach(a=>a.addEventListener('click',e=>{const el=document.getElementById(a.dataset.sec); if(!el) return; e.preventDefault(); if(document.documentElement.classList.contains('vim-trap')) return;
     el.scrollIntoView({behavior:reduce?'auto':'smooth'}); history.replaceState(null,'',a.dataset.sec==='top'?location.pathname:'#'+a.dataset.sec);}));
   let ticking=false;
   function draw(){
@@ -1387,7 +1380,6 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
     pos.textContent=cursor+':1';
     let f=files[0][1], cur=files[0][0]; for(const [id,name] of files){const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<innerHeight*.45){f=name;cur=id;}}
     if(fr>.99) [cur,f]=files[files.length-1];
-    file.textContent=f;
     navLinks.forEach(a=>{a.dataset.sec===cur?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current')});
   }
   addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(draw)}},{passive:true});
