@@ -87,7 +87,9 @@ h2{font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.035em;font-w
 .term-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);font-family:var(--mono);font-size:12px;color:var(--z-gray);user-select:none}
 .term-bar .d{width:12px;height:12px;border-radius:50%}
 .term-bar .t{flex:1;text-align:center;margin-right:52px}
-.term-body{height:min(480px,62vh);overflow-y:auto;padding:18px 20px 22px;font-family:var(--mono);font-size:14px;line-height:1.65;color:#E6E6E6;cursor:text;overscroll-behavior:contain}
+.term-body{height:min(480px,62vh);overflow-y:auto;padding:18px 20px 22px;font-family:var(--mono);font-size:14px;line-height:1.65;color:#E6E6E6;cursor:text;overscroll-behavior:auto;scrollbar-gutter:stable}
+/* the page keeps scrolling over the terminal; it only takes the wheel once you click into it */
+.term:not(.focus) .term-body{overflow-y:hidden}
 .term-body::-webkit-scrollbar{width:8px}.term-body::-webkit-scrollbar-thumb{background:#ffffff1a;border-radius:4px}
 .term-body .l{white-space:pre-wrap;word-break:break-word}
 .term-body .gap{margin-bottom:12px}
