@@ -234,8 +234,7 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 @media (max-width:640px){.nf-logo{font-size:9px}.nf{gap:14px}}
 
 /* ---------- tech stack marquee ---------- */
-.stack-sec{padding:110px 0 40px}
-.marquees{margin-top:44px;display:grid;gap:22px}
+.marquees{margin:36px 0 64px;display:grid;gap:18px}
 .marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
 .mtrack{display:flex;gap:14px;width:max-content;animation:marq var(--dur,46s) linear infinite}
 .marquee.rev .mtrack{animation-direction:reverse}
@@ -332,17 +331,12 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 </section>
 
 <!-- CONTACT -->
-<section class="stack-sec" id="stack">
-  <div class="wrap">
-    <div class="label" data-reveal><b>03</b> stack</div>
-    <h2 data-reveal>What I build with.</h2>
-  </div>
-  <div class="marquees" id="marquees" aria-label="Tech stack"></div>
-</section>
-
 <section class="contact-sec" id="contact">
   <div class="wrap">
-    <div class="label" data-reveal><b>04</b> contact</div>
+    <div class="label" data-reveal><b>03</b> contact</div>
+  </div>
+  <div class="marquees" id="marquees" aria-label="Tech stack"></div>
+  <div class="wrap">
     <p class="big" data-reveal>Let's build<br><span class="name" data-text="something.">something.</span></p>
     <div class="cicons" id="clist"></div>
     <footer>
@@ -396,8 +390,8 @@ const ME = {
     [ {name:"Python",icon:"python"}, {name:"C",icon:"c"}, {name:"C++",icon:"cpp"}, {name:"JavaScript",icon:"js"}, {name:"HTML",icon:"html"},
       {name:"CSS",icon:"css"}, {name:"SQL",badge:"SQL"}, {name:"VB.NET",icon:"dotnet"}, {name:"VBA",icon:"vba"} ],
     [ {name:"Git",icon:"git"}, {name:"GitHub",icon:"github"}, {name:"GitHub Actions",icon:"actions"}, {name:"Streamlit",icon:"streamlit"},
-      {name:"SQLite",icon:"sqlite"}, {name:"Google Sheets",icon:"sheets"}, {name:"Excel",badge:".xlsx"}, {name:"Word",badge:".docx"},
-      {name:"PowerPoint",badge:".pptx"}, {name:"Power Automate",badge:"flow"}, {name:"REST APIs",badge:"{ }"} ]
+      {name:"SQLite",icon:"sqlite"}, {name:"Google Sheets",icon:"sheets"}, {name:"Excel",badge:".xlsx"},
+      {name:"Power Automate",badge:"flow"}, {name:"REST APIs",badge:"{ }"} ]
   ],
   editor: "[nvim]",
   os: "[your distro]",
@@ -1159,7 +1153,7 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
   const gut=document.getElementById('vgut'), mode=document.getElementById('vmode'), file=document.getElementById('vfile'),
         pct=document.getElementById('vpct'), pos=document.getElementById('vpos'), cmd=document.getElementById('vcmd');
   const LH=22, BUF=84; // pretend buffer length; lines past it show ~
-  const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['stack','~/moarz/stack.json'],['contact','~/moarz/contact.txt']];
+  const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['contact','~/moarz/contact.txt']];
   let ticking=false;
   function draw(){
     ticking=false;
