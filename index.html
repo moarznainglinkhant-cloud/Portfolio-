@@ -289,12 +289,41 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 .card .art .shot .sbar span{margin-left:8px;font:12px var(--mono);color:#a3a3ad}
 .card .art .shot img{position:static;display:block;flex:1;min-height:0;width:100%;height:100%;object-fit:cover;object-position:left top;transition:transform .6s cubic-bezier(.2,.8,.2,1);transform-origin:left top}
 .card:hover .art .shot img,.card.top:focus-within .art .shot img{transform:scale(1.03)}
+/* ---------- statusline sits above the page, like real editor chrome ---------- */
+#vstat,#vcmd{z-index:40}
+#vstat{background:linear-gradient(rgba(var(--ph),.09),rgba(var(--ph),.09)),#050406;border-top:1px solid rgba(var(--ph),.14)}
+#vcmd{left:0;right:0;padding:0 10px;background:#050406}
+
+/* ---------- section nav ---------- */
+.snav{position:fixed;z-index:40;top:14px;right:clamp(14px,3vw,28px);display:flex;gap:2px;padding:4px;border-radius:999px;
+  font:12.5px var(--mono);background:rgba(8,6,10,.72);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.snav a{display:flex;align-items:center;min-height:32px;padding:0 13px;border-radius:999px;color:var(--muted);text-decoration:none;transition:color .2s,background .2s}
+.snav a:hover{color:#fff}
+.snav a[aria-current]{color:#0a0710;background:rgba(var(--ph),.9)}
+html.vim-trap .snav{display:none}
+@media (max-width:560px){.snav{left:50%;right:auto;transform:translateX(-50%);top:10px;font-size:12px}.snav a{padding:0 11px;min-height:36px}}
+
+/* ---------- keyboard focus ---------- */
+a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.round:focus-visible,.term-body .run:focus-visible{outline:2px solid var(--z-cyan);outline-offset:3px}
+.btn:focus-visible,.snav a:focus-visible{outline-offset:2px}
+.card .links a:focus-visible{border-radius:4px}
+.cicon:focus-visible{outline:none}
+.cicon:focus-visible .ib{outline:2px solid var(--z-cyan);outline-offset:3px}
+.cicon:focus-visible .cl{color:#fff}
+.stack:focus-visible{outline:2px solid var(--z-cyan);outline-offset:12px;border-radius:24px}
 </style>
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
 <div id="shade" aria-hidden="true"></div>
 <div id="grain" aria-hidden="true"></div>
+
+<nav class="snav" id="snav" aria-label="Sections">
+  <a href="#top" data-sec="top" aria-current="true">home</a>
+  <a href="#shell" data-sec="shell">terminal</a>
+  <a href="#projects" data-sec="projects">projects</a>
+  <a href="#contact" data-sec="contact">contact</a>
+</nav>
 
 <div class="page">
 
@@ -455,7 +484,7 @@ const isUrl = s => /^https?:\/\//.test(s||"");
   if(!gl) return null;
   const fs=`precision highp float;
   uniform vec2 r; uniform float t,px,shape,intro,scroll; uniform vec3 col;
-  uniform vec4 rip[8]; uniform vec3 hov[12]; uniform vec4 calm[6];
+  uniform vec4 rip[8]; uniform vec3 hov[12]; uniform vec4 calm[8];
   float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
     return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
@@ -486,8 +515,8 @@ const isUrl = s => /^https?:\/\//.test(s||"");
     float tw=h(pid+floor(t*5.)); v*=1.-.25*step(.93,tw);
     // thin out pixels around key text so it stays easy to read
     float k=0.;
-    for(int i=0;i<6;i++){vec4 C=calm[i]; if(C.z>C.x){vec2 q2=max(max(C.xy-pc,pc-C.zw),0.); k=max(k,smoothstep(px*9.,0.,length(q2)));}}
-    v*=1.-.72*k;
+    for(int i=0;i<8;i++){vec4 C=calm[i]; if(C.z>C.x){vec2 q2=max(max(C.xy-pc,pc-C.zw),0.); k=max(k,smoothstep(px*12.,px*2.,length(q2)));}}
+    v*=1.-.96*k;
     v=clamp(v,0.,1.);
     float on=step(b8(pid)+.5/64.,v);
     vec2 l=fract(fc/px)-.5; float m=1.;
@@ -505,9 +534,9 @@ const isUrl = s => /^https?:\/\//.test(s||"");
   const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
   const st={size:BG.size,shape:({square:0,circle:1,diamond:2})[BG.shape]??1,col:rgb(BG.tint),on:true};
   document.documentElement.style.setProperty('--ph',st.col.map(x=>Math.round(x*255)).join(','));
-  const calmEls=['#heroName','#hi','#heroTag'].map(q=>document.querySelector(q)).concat([...document.querySelectorAll('section h2, section .sub')]).filter(Boolean);
-  const calm=new Float32Array(24);
-  function measure(){calm.fill(0);let n=0;for(const el of calmEls){if(n>=6)break;const r=el.getBoundingClientRect();if(r.bottom<-50||r.top>innerHeight+50||!r.width)continue;
+  const calmEls=[...document.querySelectorAll('#heroPrompt, #hi, #heroName, #heroTag, #heroCta, section .label, section h2, section .sub, section .hint, section .big, #chips, #clist, footer')];
+  const calm=new Float32Array(32), calmRange=document.createRange();
+  function measure(){calm.fill(0);let n=0;for(const el of calmEls){if(n>=8)break;calmRange.selectNodeContents(el);const r=calmRange.getBoundingClientRect();if(r.bottom<-50||r.top>innerHeight+50||!r.width)continue;
     calm.set([r.left*dpr,(innerHeight-r.bottom)*dpr,r.right*dpr,(innerHeight-r.top)*dpr],n*4);n++;}}
   let dpr=1;
   function size(){dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);gl.viewport(0,0,cv.width,cv.height);if(reduce)draw()}
@@ -1342,6 +1371,9 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
         pct=document.getElementById('vpct'), pos=document.getElementById('vpos'), cmd=document.getElementById('vcmd');
   const LH=22, BUF=84; // pretend buffer length; lines past it show ~
   const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['contact','~/moarz/contact.txt']];
+  const navLinks=[...document.querySelectorAll('#snav a')];
+  navLinks.forEach(a=>a.addEventListener('click',e=>{const el=document.getElementById(a.dataset.sec); if(!el) return; e.preventDefault();
+    el.scrollIntoView({behavior:reduce?'auto':'smooth'}); history.replaceState(null,'',a.dataset.sec==='top'?location.pathname:'#'+a.dataset.sec);}));
   let ticking=false;
   function draw(){
     ticking=false;
@@ -1352,7 +1384,10 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
     gut.innerHTML=out;
     pct.textContent= fr<.01?'Top':fr>.99?'Bot':Math.round(fr*100)+'%';
     pos.textContent=cursor+':1';
-    let f=files[0][1]; for(const [id,name] of files){const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<innerHeight*.45) f=name;} file.textContent=f;
+    let f=files[0][1], cur=files[0][0]; for(const [id,name] of files){const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<innerHeight*.45){f=name;cur=id;}}
+    if(fr>.99) [cur,f]=files[files.length-1];
+    file.textContent=f;
+    navLinks.forEach(a=>{a.dataset.sec===cur?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current')});
   }
   addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(draw)}},{passive:true});
   addEventListener('resize',draw); draw();
