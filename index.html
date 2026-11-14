@@ -178,15 +178,15 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 /* ---------- vim ghost (background flavour) ---------- */
 :root{--ph:180,151,207}
 /* vim ghost: gutter + statusline, burned in like phosphor */
-.vim{position:fixed;z-index:2;pointer-events:none;font:13px/22px var(--mono);color:rgba(var(--ph),.16);
-  text-shadow:0 0 6px rgba(var(--ph),.55),0 0 18px rgba(var(--ph),.25);}
+.vim{position:fixed;z-index:2;pointer-events:none;font:13px/22px var(--mono);color:rgba(var(--ph),.28);
+  text-shadow:0 0 6px rgba(var(--ph),.5),0 0 18px rgba(var(--ph),.22);}
 #vgut{left:10px;top:10px;bottom:44px;overflow:hidden;white-space:pre;text-align:right;width:4ch;padding-top:6px}
-#vgut b{font-weight:400;color:rgba(var(--ph),.42)}
-#vstat{left:0;right:0;bottom:22px;height:22px;display:flex;gap:0;white-space:pre;color:rgba(var(--ph),.38);background:rgba(var(--ph),.035)}
-#vstat .mode{padding:0 10px;color:#000;background:rgba(var(--ph),.55);text-shadow:none;font-weight:600;letter-spacing:.04em;transition:background .25s}
+#vgut b{font-weight:600;color:rgba(var(--ph),.7)}
+#vstat{left:0;right:0;bottom:22px;height:22px;display:flex;gap:0;white-space:pre;color:rgba(var(--ph),.6);background:rgba(var(--ph),.07)}
+#vstat .mode{padding:0 10px;color:#000;background:rgba(var(--ph),.8);text-shadow:none;font-weight:600;letter-spacing:.04em;transition:background .25s}
 #vstat .seg{padding:0 10px}
 #vstat .sp{flex:1}
-#vcmd{left:10px;right:10px;bottom:0;height:22px;white-space:pre;color:rgba(var(--ph),.42);overflow:hidden}
+#vcmd{left:10px;right:10px;bottom:0;height:22px;white-space:pre;color:rgba(var(--ph),.6);overflow:hidden}
 .toast{bottom:64px}
 @media (max-width:720px){#vgut{display:none}#vstat .hide-s{display:none}}
 /* hero name: calm, solid */
@@ -198,13 +198,13 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 #heroName[data-style=iris]{background:linear-gradient(100deg,#ffd6ec 0%,#ff9fd6 22%,#d9b8ff 50%,#a7c8ff 76%,#9AEDFE 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 
 /* ---------- hero name animations ---------- */
-#heroName .ch{position:relative}
+#heroName .ch.scr{position:relative}
+.hero h1{position:relative}
 #heroName.fx-hide .ch{visibility:hidden}
 #heroName .ch.on{visibility:visible}
-.vcur{display:inline-block;width:0;position:relative}
-.vcur::after{content:"";position:absolute;left:.04em;bottom:.14em;width:.42em;height:.74em;background:rgb(var(--ph));box-shadow:0 0 18px rgba(var(--ph),.6)}
-.vcur.blink::after{animation:blink 1.05s steps(1) infinite}
-.vcur.bye::after{transition:opacity .5s;opacity:0}
+.vcur{position:absolute;left:0;top:0;width:.42em;height:.74em;background:rgb(var(--ph));box-shadow:0 0 18px rgba(var(--ph),.6);pointer-events:none}
+.vcur.blink{animation:blink 1.05s steps(1) infinite}
+.vcur.bye{transition:opacity .5s;opacity:0}
 #heroName .ch.scr{color:transparent;-webkit-text-fill-color:transparent}
 #heroName .ch.scr::after{content:attr(data-g);position:absolute;left:0;top:0;color:rgb(var(--ph));-webkit-text-fill-color:rgb(var(--ph));font-family:var(--mono);font-weight:500;font-size:.8em;line-height:1.25}
 #heroName .ch.sel{background:rgba(var(--ph),.85);color:#0a0710;-webkit-text-fill-color:#0a0710;transition:none}
@@ -249,7 +249,7 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
     </h1>
     <p class="tag" id="heroTag">A second-year <strong>Computer Science Specialist</strong> at the University of Toronto.</p>
     <div class="cta" id="heroCta">
-      <a class="btn primary" href="#shell">Open the shell <kbd>⏎</kbd></a>
+      <a class="btn primary" href="#shell">Open the terminal <kbd>⏎</kbd></a>
       <a class="btn" href="#projects">See projects</a>
     </div>
   </div>
@@ -259,9 +259,8 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
 <!-- SHELL -->
 <section class="shell-sec" id="shell">
   <div class="wrap">
-    <div class="label" data-reveal><b>01</b> shell</div>
+    <div class="label" data-reveal><b>01</b> terminal</div>
     <h2 data-reveal>Poke around.</h2>
-    <p class="sub" data-reveal>A real (tiny) zsh. Type <code style="font-family:var(--mono);color:var(--z-green)">help</code>, hit Tab to autocomplete, ↑ for history. Or just tap a command below.</p>
 
     <div class="term" id="term" data-reveal-term>
       <div class="term-bar">
@@ -285,7 +284,7 @@ footer{padding:48px 0 56px;font:13px var(--mono);color:var(--z-gray);display:fle
       <div class="label" data-reveal><b>02</b> projects</div>
       <h2 data-reveal>Things I've built.</h2>
       <p class="sub" data-reveal>Swipe the stack, drag a card, or use ← → when it's focused.</p>
-      <p class="hint" data-reveal>// tip: try <span class="c-g">open 2</span> in the shell</p>
+      <p class="hint" data-reveal>// tip: try <span class="c-g">open 2</span> in the terminal</p>
     </div>
     <div class="stack-wrap" data-reveal>
       <div class="stack" id="stack" tabindex="0" aria-roledescription="card stack" aria-label="Projects. Use left and right arrow keys to browse."></div>
@@ -505,19 +504,26 @@ const NameFX=(function(){
     return [...el.querySelectorAll('.ch')];
   }
   el.dataset.style=HERO.nameStyle; split();
-  function reset(){ run++; el.className='name'; el.style.cssText=''; split(); window.gsap&&gsap.killTweensOf(el); }
+  // final state: plain words, no per-letter spans
+  function settle(){ el.classList.remove('fx-hide'); el.innerHTML=text.split(' ').map((w,i)=>`<span class="w${i}">${esc(w)}</span>`).join(' '); }
+  function reset(){ run++; el.className='name'; el.style.cssText=''; el.closest('h1').querySelectorAll('.vcur').forEach(c=>c.remove()); split(); window.gsap&&gsap.killTweensOf(el); }
   const FX={
     // Vim insert mode: a block cursor types your name, then <Esc>
     async typed(id){
       const ch=split(); el.classList.add('fx-hide');
-      const cur=document.createElement('span'); cur.className='vcur';
+      // the cursor lives beside the name (not inside it) so Safari still paints the gradient text
+      const h1=el.closest('h1'); h1.querySelectorAll('.vcur').forEach(c=>c.remove());
+      const cur=document.createElement('span'); cur.className='vcur'; cur.setAttribute('aria-hidden','true'); h1.appendChild(cur);
+      const place=(c,after)=>{ const r=c.getBoundingClientRect(), H=h1.getBoundingClientRect(), fs=parseFloat(getComputedStyle(el).fontSize);
+        cur.style.left=((after?r.right:r.left)-H.left+fs*.04)+'px'; cur.style.top=(r.top-H.top+r.height-fs*.14-fs*.74-fs*.1)+'px'; };
+      place(ch[0],false);
       vim('INSERT','90,247,142','-- INSERT --');
       for(let i=0;i<ch.length;i++){
         if(id!==run) return;
-        ch[i].classList.add('on'); ch[i].after(cur);
+        ch[i].classList.add('on'); place(ch[i],true);
         await sleep(42+Math.random()*48+(ch[i+1]&&ch[i].nextSibling&&ch[i].nextSibling.nodeType===3?70:0));
       }
-      cur.classList.add('blink');
+      cur.classList.add('blink'); settle();
       (async()=>{ await sleep(700); if(id!==run) return; vim('NORMAL',null,'');   // <Esc>
         await sleep(1600); cur.classList.add('bye'); await sleep(600); cur.remove(); })();
     },
@@ -1103,7 +1109,7 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
   addEventListener('resize',draw); draw();
 
   let cmdT; const say=(t,ms=3200)=>{cmd.textContent=t;clearTimeout(cmdT);if(ms)cmdT=setTimeout(()=>{cmd.textContent='';},ms)};
-  const setMode=(m,col)=>{mode.textContent=m; mode.style.background=col?`rgba(${col},.6)`:''};
+  const setMode=(m,col)=>{mode.textContent=m; mode.style.background=col?`rgba(${col},.85)`:''};
   window.__vimMode=(m,col,cmdText)=>{setMode(m,col); if(cmdText!==undefined) say(cmdText,0);};
   const inp=document.querySelector('.term input, #termInput, .term-body input');
   if(inp){
