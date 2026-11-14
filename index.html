@@ -65,8 +65,10 @@ h2{font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.035em;font-w
 .name::after{color:#FF6AC1;transform:translate(3px,0);clip-path:inset(55% 0 8% 0)}
 .name.glitch::before,.name.glitch::after{opacity:.9}
 .hero .tag{margin:30px 0 0;font-size:clamp(18px,2.2vw,24px);color:#D8D4DC;font-weight:400;letter-spacing:-.01em;display:flex;align-items:center;gap:18px}
-.hero .tag .uoft{flex:none;width:clamp(52px,6vw,68px);height:clamp(52px,6vw,68px);padding:6px;border-radius:16px;background:#fff;object-fit:contain;box-shadow:0 8px 30px rgba(0,0,0,.35)}
-.hero .tag .tt{max-width:30ch}
+.hero .tag{gap:22px}
+.hero .tag .crest{--s:clamp(78px,8vw,100px);flex:none;display:block;width:calc(var(--s)*.43);height:calc(var(--s)*.99);overflow:hidden}
+.hero .tag .crest img{display:block;width:var(--s);height:var(--s);max-width:none;margin:calc(var(--s)*-.01) 0 0 calc(var(--s)*-.285);filter:url(#uoftInk) drop-shadow(0 0 14px rgba(196,170,255,.22))}
+.hero .tag .tt{max-width:30ch;padding-left:22px;border-left:1px solid rgba(255,255,255,.18)}
 .hero .tag strong{color:#fff;font-weight:500}
 .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:40px}
 .btn{font:500 15px/1 var(--sans);display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 22px;border-radius:999px;text-decoration:none;cursor:pointer;
@@ -283,6 +285,8 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 
 <div class="page">
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="uoftInk" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -.26 -.88 -.09 1.25 0"/></filter></svg>
+
 <!-- HERO -->
 <header class="hero" id="top">
   <div class="wrap">
@@ -291,7 +295,7 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
       <span class="hi" id="hi"><span class="w">Hi,</span> <span class="w">I'm</span></span>
       <span class="name" id="heroName" data-text="Moarz Naing Lin Khant">Moarz Naing Lin Khant</span>
     </h1>
-    <p class="tag" id="heroTag"><img class="uoft" src="https://upload.wikimedia.org/wikipedia/en/thumb/0/04/Utoronto_coa.svg/250px-Utoronto_coa.svg.png" alt="University of Toronto coat of arms" width="68" height="68" decoding="async"><span class="tt">A second-year <strong>Computer Science Specialist</strong> at the University of Toronto.</span></p>
+    <p class="tag" id="heroTag"><span class="crest"><img src="https://upload.wikimedia.org/wikipedia/en/0/04/Utoronto_coa.svg" alt="University of Toronto coat of arms" width="100" height="100" decoding="async"></span><span class="tt">A second-year <strong>Computer Science Specialist</strong> at the University of Toronto.</span></p>
     <div class="cta" id="heroCta">
       <a class="btn primary" href="#shell">Open the terminal <kbd>⏎</kbd></a>
       <a class="btn" href="#projects">See projects</a>
