@@ -354,7 +354,7 @@ const ME = {
   os: "[your distro]",
   // image: optional data: URI for a screenshot (remote image URLs won't load in this preview)
   projects: [
-    { name:"[Project One]",   year:"[2026]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]","[tech]"], code:"[repo-link]", demo:"", glyph:"λ",   colors:["#ff4fa3","#5a1a7a","#120018"] },
+    { name:"MCC Website",     year:"2026",   desc:"The club's website: events on a hand-drawn timeline, a team wheel, a photo gallery with a 'Surprise Me' honeycomb shuffle, a member-card maker with English and Burmese names, and 3D registration tickets you can tilt and flip.", tags:["[tech]","[tech]","[tech]"], code:"[repo-link]", demo:"[live-link]", glyph:"က",   colors:["#ffb454","#7a1238","#140006"] },
     { name:"[Project Two]",   year:"[2026]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]"],         code:"[repo-link]", demo:"", glyph:"$_",  colors:["#57c7ff","#2a1f6e","#05010f"] },
     { name:"[Project Three]", year:"[2025]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]","[tech]"], code:"[repo-link]", demo:"", glyph:"{ }", colors:["#ff7a59","#7a1238","#140006"] },
     { name:"[Project Four]",  year:"[2025]", desc:"[One or two lines on what it does and why it's cool.]", tags:["[tech]","[tech]"],         code:"[repo-link]", demo:"", glyph:"</>", colors:["#c6ff6b","#1d5a4a","#00110c"] },
@@ -933,10 +933,24 @@ const T = (()=>{
   if(hasG&&window.ScrollTrigger&&!reduce) gsap.from('#chips .chip',{y:12,opacity:0,stagger:.04,duration:.6,ease:"power3.out",scrollTrigger:{trigger:'#chips',start:"top 95%"}});
 
   window.__term={exec:(c)=>exec(c),clear:()=>{out.innerHTML=''}};
+  // what the visitor is on, e.g. "macOS · Safari" or "iPhone · Chrome" (from the browser's user agent)
+  function visitorDevice(){
+    const ua=navigator.userAgent||"", uad=navigator.userAgentData, plat=(uad&&uad.platform)||navigator.platform||"";
+    const touchMac=/Macintosh/.test(ua)&&navigator.maxTouchPoints>1;           // iPadOS reports itself as a Mac
+    const os= /iPhone/.test(ua)?"iPhone": (/iPad/.test(ua)||touchMac)?"iPad": /Android/.test(ua)?"Android":
+      /CrOS/.test(ua)?"ChromeOS": /Windows/.test(ua)||/Win/.test(plat)?"Windows": /Mac/.test(ua)?"macOS": /Linux/.test(ua)?"Linux":"an unknown machine";
+    const br= /Edg\//.test(ua)?"Edge": /OPR\/|Opera/.test(ua)?"Opera": /SamsungBrowser/.test(ua)?"Samsung Internet":
+      /Firefox\/|FxiOS/.test(ua)?"Firefox": /CriOS|Chrome\//.test(ua)?"Chrome": /Safari\//.test(ua)?"Safari":"";
+    return br?`${os} · ${br}`:os;
+  }
+  function loginTime(){
+    const d=new Date(), p=n=>String(n).padStart(2,"0");
+    return d.toDateString().slice(0,10)+` ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
   async function boot(){
     busy=true;
     const lines=[
-      `<span class="c-d">Last login: ${new Date().toDateString()} on ttys001</span>`,
+      `<span class="c-d">Last login: ${loginTime()} on ${esc(visitorDevice())}</span>`,
       ``,
       `Welcome to <span class="c-m bold">${esc(ME.handle)}</span>'s corner of the internet.`,
       `Type ${run("help")} to get started, or try ${run("neofetch")}.`,
