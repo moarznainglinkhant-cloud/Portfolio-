@@ -77,9 +77,6 @@ h2{font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.035em;font-w
 .btn.primary{background:#fff;color:#0b0b0d;border-color:#fff}
 .btn.primary:hover{background:#ffe6f3}
 .btn kbd{font-family:var(--mono);font-size:12px;opacity:.6}
-.scrollhint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
-.scrollhint i{display:block;width:1px;height:38px;background:linear-gradient(#fff8,#fff0);animation:drip 2s ease-in-out infinite}
-@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* ---------- terminal ---------- */
 .shell-sec{padding:120px 0}
@@ -102,6 +99,7 @@ h2{font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.035em;font-w
 .term-body .run{color:var(--z-yellow);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 .term-body .run:hover{color:#fff}
 .tgrid{display:grid;grid-template-columns:max-content 1fr;gap:2px 22px}
+.tcmds{display:flex;flex-wrap:wrap;gap:4px 22px}
 .inline-row{display:flex;flex-wrap:wrap;align-items:baseline}
 .typed{white-space:pre}
 .caret{display:inline-block;width:.62em;height:1.2em;vertical-align:-.25em;background:#E6E6E6;margin-left:1px}
@@ -174,7 +172,7 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
   .citem .k{width:70px}
 }
 @media (prefers-reduced-motion:reduce){
-  #grain,.scrollhint i{animation:none}
+  #grain{animation:none}
 }
 /* no-gsap fallback */
 .nogsap .stack{height:auto;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px}
@@ -301,7 +299,6 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
       <a class="btn" href="#projects">See projects</a>
     </div>
   </div>
-  <div class="scrollhint" aria-hidden="true">scroll<i></i></div>
 </header>
 
 <!-- SHELL -->
@@ -637,10 +634,10 @@ const NameFX=(function(){
   $('#heroPrompt').innerHTML=promptHTML()+' whoami';
   if(!hasG||reduce){ return; }
   document.querySelectorAll('.big .name').forEach(n=>gsap.to(n,{backgroundPosition:"100% 0",duration:6,ease:"sine.inOut",repeat:-1,yoyo:true}));
-  gsap.set(['#heroTag','#heroCta > *','.scrollhint'],{opacity:0});
+  gsap.set(['#heroTag','#heroCta > *'],{opacity:0});
   $('#heroName').style.opacity=0;
   window.playHero=async function(kind){
-    gsap.set(['#heroTag','#heroCta > *','.scrollhint'],{opacity:0,y:12});
+    gsap.set(['#heroTag','#heroCta > *'],{opacity:0,y:12});
     gsap.fromTo('#hi',{y:18,opacity:0},{y:0,opacity:1,duration:.7,ease:"power3.out"});
     await new Promise(r=>setTimeout(r,450));
     const p=NameFX.play(kind||HERO.nameAnim); $('#heroName').style.opacity='';
@@ -648,7 +645,6 @@ const NameFX=(function(){
     p.then(()=>{
       gsap.to('#heroTag',{y:0,opacity:1,duration:.7,ease:"power3.out"});
       gsap.to('#heroCta > *',{y:0,opacity:1,duration:.6,stagger:.08,delay:.15,ease:"power3.out"});
-      gsap.to('.scrollhint',{y:0,opacity:1,duration:.8,delay:.4});
     });
     return p;
   };
@@ -774,9 +770,8 @@ const T = (()=>{
 
   const C={
     help:{d:"show this list",f(){
-      const rows=Object.entries(C).filter(([,v])=>v.d).map(([k,v])=>`${run(k)}<span class="c-d">${esc(v.d)}</span>`).join("");
-      print(`<div class="tgrid">${rows}</div>`);
-      print(`<span class="c-d">Tab completes · ↑↓ history · Ctrl+L clears · try</span> ${run("cat .zshrc")}`);
+      const rows=Object.keys(C).filter(k=>C[k].d).map(k=>run(k)).join("");
+      print(`<div class="tcmds">${rows}</div>`);
       gap(`<span class="c-d">psst… the fun stuff lives in</span> ${run("ls /usr/games")}`);
     }},
     whoami:{d:"who's this",f(){gap(`<span class="c-g bold">${esc(ME.name)}</span>\n<span class="c-d">${esc(ME.role)}</span>`)}},
@@ -1020,7 +1015,7 @@ const T = (()=>{
       `<span class="c-d">Last login: ${loginTime()} on ${esc(visitorDevice())}</span>`,
       ``,
       `Welcome to <span class="c-m bold">${esc(ME.handle)}</span>'s corner of the internet.`,
-      `Type ${run("help")} to get started, or try ${run("neofetch")}.`,
+      `Type ${run("help")}, or try ${run("neofetch")}.`,
     ];
     for(const l of lines){ print(l); if(!reduce) await new Promise(r=>setTimeout(r,140)); }
     print(""); busy=false; updPrompt();
