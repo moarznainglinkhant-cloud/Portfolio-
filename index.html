@@ -494,6 +494,7 @@ const isUrl = s => /^https?:\/\//.test(s||"");
   const fs=`precision highp float;
   uniform vec2 r; uniform float t,px,shape,intro,scroll; uniform vec3 col;
   uniform vec4 rip[8]; uniform vec3 hov[12]; uniform vec4 calm[8];
+  uniform vec4 scn; uniform sampler2D tex; uniform float texMix;
   float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
     return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
@@ -506,11 +507,31 @@ const isUrl = s => /^https?:\/\//.test(s||"");
     vec2 pid=floor(fc/px), pc=(pid+.5)*px;
     vec2 uv=pc/r.y;
     float tt=t*.5;
-    vec2 drift=vec2(.866,.5)*.2*t*.35;
-    vec2 q=uv*2.+drift+vec2(0.,scroll*.35);
-    vec2 w=vec2(fbm(q+vec2(0.,tt*.15)),fbm(q+vec2(5.2,1.3)-tt*.12));
-    float v=fbm(q+1.6*w);
-    v=smoothstep(.44,.9,v)*.8;
+    vec2 un=pc/r;
+    float v=0.;
+    // the field is one of four scenes, cross-dissolved by scroll position (scn = weights)
+    if(scn.x>.002){            // hero: drifting nebula
+      vec2 drift=vec2(.866,.5)*.2*t*.35;
+      vec2 q=uv*2.+drift+vec2(0.,scroll*.35);
+      vec2 w=vec2(fbm(q+vec2(0.,tt*.15)),fbm(q+vec2(5.2,1.3)-tt*.12));
+      v+=scn.x*smoothstep(.44,.9,fbm(q+1.6*w))*.8;
+    }
+    if(scn.y>.002){            // terminal: CRT scanlines with a rolling refresh bar
+      float row=step(mod(pid.y,3.),.5);
+      float wave=n(vec2(uv.x*2.6-t*.4,pid.y*.23+t*.06));
+      float bar=exp(-pow((fract(un.y+t*.06)-.5)/.075,2.));
+      v+=scn.y*(row*(.3+.62*smoothstep(.3,.8,wave))*(.92+.08*sin(t*11.))+bar*.6*(.5+.5*row));
+    }
+    if(scn.z>.002){            // projects: the current project, rendered in dots
+      vec3 T=texture2D(tex,un).rgb;
+      v+=scn.z*texMix*smoothstep(.12,.7,dot(T,vec3(.3,.59,.11)))*.92;
+    }
+    if(scn.w>.002){            // contact: a single pulsing wave
+      float pu=.5+.5*sin(t*1.5);
+      float y0=.38+.12*sin(uv.x*2.3-t*.9)+.045*sin(uv.x*6.1+t*1.6);
+      float d=abs(un.y-y0), d2=abs(un.y-y0-.1*sin(uv.x*1.7+t*.6)-.02);
+      v+=scn.w*(exp(-pow(d/(.045+.04*pu),2.))+exp(-pow(d2/.02,2.))*.45+exp(-pow(d/.2,2.))*.22);
+    }
     // click ripples
     for(int i=0;i<8;i++){vec4 R=rip[i]; if(R.w>0.){float age=t-R.z; float d=length(pc-R.xy)/r.y;
       float rr=age*.3; v+=R.w*exp(-pow((d-rr)/.03,2.))*exp(-age*1.1)*.55;}}
@@ -532,7 +553,7 @@ const isUrl = s => /^https?:\/\//.test(s||"");
     vec2 l=fract(fc/px)-.5; float m=1.;
     if(shape>.5&&shape<1.5) m=smoothstep(.5,.38,length(l));
     else if(shape>1.5) m=smoothstep(.5,.4,abs(l.x)+abs(l.y));
-    vec3 c=(col*on*m*.58 + col*v*.035)*(1.-.8*k);     // soft glow haze under the pixels
+    vec3 c=(col*on*m*.58 + col*v*.035)*(1.-(.8-.3*scn.z)*k);     // soft glow haze under the pixels
     gl_FragColor=vec4(c,1.);
   }`;
   const vs=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
@@ -540,7 +561,7 @@ const isUrl = s => /^https?:\/\//.test(s||"");
   const pr=gl.createProgram(); gl.attachShader(pr,mk(gl.VERTEX_SHADER,vs)); gl.attachShader(pr,mk(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(pr); gl.useProgram(pr);
   const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
   const loc=gl.getAttribLocation(pr,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
-  const U={}; ['r','t','px','shape','intro','scroll','col','rip','hov','calm'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+  const U={}; ['r','t','px','shape','intro','scroll','col','rip','hov','calm','scn','tex','texMix'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
   const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
   const st={size:BG.size,shape:({square:0,circle:1,diamond:2})[BG.shape]??1,col:rgb(BG.tint),on:true};
   document.documentElement.style.setProperty('--ph',st.col.map(x=>Math.round(x*255)).join(','));
@@ -549,7 +570,49 @@ const isUrl = s => /^https?:\/\//.test(s||"");
   function measure(){calm.fill(0);let n=0;for(const el of calmEls){if(n>=8)break;calmRange.selectNodeContents(el);const r=calmRange.getBoundingClientRect();if(r.bottom<-50||r.top>innerHeight+50||!r.width)continue;
     calm.set([r.left*dpr,(innerHeight-r.bottom)*dpr,r.right*dpr,(innerHeight-r.top)*dpr],n*4);n++;}}
   let dpr=1;
-  function size(){dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);gl.viewport(0,0,cv.width,cv.height);if(reduce)draw()}
+  /* --- scenes: weights follow the section under the middle of the viewport --- */
+  const secs=['shell','projects','contact'].map(id=>document.getElementById(id)), sw=[1,0,0,0]; let ease=.12, lastT=0;
+  function scenes(){
+    const mid=innerHeight*.5, band=innerHeight*.34;
+    const s=secs.map(el=>{ if(!el) return 0; const x=Math.min(1,Math.max(0,(mid+band-el.getBoundingClientRect().top)/(2*band))); return x*x*(3-2*x); });
+    const tg=[1-s[0], s[0]*(1-s[1]), s[1]*(1-s[2]), s[2]];
+    for(let i=0;i<4;i++) sw[i]+=(tg[i]-sw[i])*(reduce?1:ease);
+  }
+  /* --- projects scene: the top card (screenshot, or its glyph) drawn to a texture the shader dithers --- */
+  const tc=document.createElement('canvas'), tx=tc.getContext('2d',{willReadFrequently:true}), tex=gl.createTexture(), imgs={};
+  gl.bindTexture(gl.TEXTURE_2D,tex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+  [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));
+  let proj=null, projNext=null, texMix=0, texT=0;
+  function compose(p){
+    const W=512, H=Math.max(64,Math.round(W*innerHeight/Math.max(1,innerWidth))); tc.width=W; tc.height=H;
+    tx.fillStyle='#000'; tx.fillRect(0,0,W,H);
+    const src=p&&p.shot&&window.SHOTS&&SHOTS[p.shot];
+    if(src){
+      let im=imgs[p.shot]; if(!im){ im=imgs[p.shot]=new Image(); im.onload=()=>{ if(proj===p) compose(p); }; im.src=src; }
+      if(im.complete&&im.naturalWidth){
+        // fill the viewport; a light page is inverted so its ink (logo, text, photo) is what lights up
+        const k=Math.max(W/im.naturalWidth,H/im.naturalHeight), w=im.naturalWidth*k, h=im.naturalHeight*k, x=0, y=(H-h)*.3;
+        tx.drawImage(im,x,y,w,h);
+        const px=tx.getImageData(0,0,W,H).data; let sum=0; for(let i=0;i<px.length;i+=64) sum+=px[i]*.3+px[i+1]*.59+px[i+2]*.11;
+        if(sum/(px.length/64)>128){ tx.globalCompositeOperation='difference'; tx.fillStyle='#fff'; tx.fillRect(0,0,W,H); tx.globalCompositeOperation='source-over'; }
+        // feather the edges so the picture melts into the field instead of sitting in a box
+        const f=Math.min(w,h)*.16; tx.globalCompositeOperation='destination-out';
+        [[x,y,x+f,y,w,h],[x+w,y,x+w-f,y,w,h],[x,y,x,y+f,w,h],[x,y+h,x,y+h-f,w,h]].forEach(([x0,y0,x1,y1])=>{
+          const g=tx.createLinearGradient(x0,y0,x1,y1); g.addColorStop(0,'#000'); g.addColorStop(1,'rgba(0,0,0,0)'); tx.fillStyle=g; tx.fillRect(x,y,w,h); });
+        tx.globalCompositeOperation='destination-over'; tx.fillStyle='#000'; tx.fillRect(0,0,W,H); tx.globalCompositeOperation='source-over';
+      }
+    } else if(p){
+      tx.fillStyle='#fff'; tx.textAlign='center'; tx.textBaseline='middle';
+      let fsz=H*.66; tx.font=`800 ${fsz}px "JetBrains Mono",ui-monospace,monospace`;
+      const mw=tx.measureText(p.glyph||'?').width; if(mw>W*.8){ fsz*=W*.8/mw; tx.font=`800 ${fsz}px "JetBrains Mono",ui-monospace,monospace`; }
+      tx.fillText(p.glyph||'?',W/2,H*.52);
+    }
+    gl.bindTexture(gl.TEXTURE_2D,tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,tc);
+  }
+  compose(null);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ if(proj) compose(proj); });
+  function size(){dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);gl.viewport(0,0,cv.width,cv.height);if(proj)compose(proj);if(reduce)draw()}
   addEventListener('resize',size);
   const rip=new Float32Array(32), hov=new Float32Array(36); let ri=0, hi=0, lx=-1e4, ly=-1e4;
   const t0=performance.now(); let introStart=0;
@@ -564,6 +627,11 @@ const isUrl = s => /^https?:\/\//.test(s||"");
     gl.uniform2f(U.r,cv.width,cv.height); gl.uniform1f(U.t,t); gl.uniform1f(U.px,Math.max(1,Math.round(st.size*dpr)));
     gl.uniform1f(U.shape,st.shape); gl.uniform3fv(U.col,st.col); gl.uniform1f(U.scroll,scrollY/innerHeight);
     gl.uniform1f(U.intro,reduce?1:Math.min(1,(t-introStart)/1.6)); gl.uniform4fv(U.rip,rip); gl.uniform3fv(U.hov,hov); measure(); gl.uniform4fv(U.calm,calm);
+    ease=1-Math.exp(-Math.min(.25,Math.max(0,t-lastT))*8); lastT=t;   // frame-rate independent easing
+    scenes(); gl.uniform4f(U.scn,sw[0],sw[1],sw[2],sw[3]);
+    // swapping projects: the old picture dissolves out, the new one dissolves in
+    if(projNext&&(texMix<.06||reduce||!proj)){ proj=projNext; projNext=null; compose(proj); texT=1; }
+    texMix=reduce?texT:texMix+(texT-texMix)*ease; gl.uniform1f(U.texMix,texMix); gl.uniform1i(U.tex,0);
     gl.drawArrays(gl.TRIANGLES,0,6);
   }
   function loop(){ if(document.hidden){requestAnimationFrame(loop);return} draw(); if(!reduce) requestAnimationFrame(loop); }
@@ -574,6 +642,8 @@ const isUrl = s => /^https?:\/\//.test(s||"");
     tint(hex){ st.col=rgb(hex); document.documentElement.style.setProperty('--ph',st.col.map(x=>Math.round(x*255)).join(',')); if(reduce) draw(); },
     reset(){ this.tint(BG.tint); },
     shape(k){ st.shape=({square:0,circle:1,diamond:2})[k]??st.shape; if(reduce) draw(); },
+    project(p){ if(p===proj&&!projNext) return; if(p===proj){ projNext=null; texT=1; return; } projNext=p; texT=0; if(reduce) draw(); },
+    ripple(x,y,s=1){ rip.set([x*dpr,(innerHeight-y)*dpr,now(),s],(ri++%8)*4); if(reduce) draw(); },
     burst(n=3){ for(let i=0;i<n;i++) rip.set([Math.random()*cv.width,Math.random()*cv.height,now()+i*.12,1],(ri++%8)*4); if(reduce) draw(); }
   };
   if(reduce) draw(); else loop();
@@ -705,15 +775,65 @@ const NameFX=(function(){
   setTimeout(()=>playHero(),700);
 })();
 
+/* ---------------- pixel dissolve ----------------
+   Things appear and leave dot by dot, through the same ordered-dither pattern as the background.
+   A set of tiny mask tiles is drawn once (an 8x8 Bayer matrix of dots that switch on in order and
+   swell until they fuse); animating = stepping an element's mask-image through those tiles.       */
+const Dither=(function(){
+  const N=22, C=8, M=8, S=C*M, R=2, frames=[];
+  const ok=hasG&&!reduce&&window.CSS&&(CSS.supports('mask-image','none')||CSS.supports('-webkit-mask-image','none'));
+  if(ok){
+    let B=[[0]]; while(B.length<M){ const n=B.length, o=[]; for(let y=0;y<n*2;y++){o[y]=[]; for(let x=0;x<n*2;x++) o[y][x]=4*B[y%n][x%n]+[[0,2],[3,1]][y/n|0][x/n|0];} B=o; }
+    const cv=document.createElement('canvas'); cv.width=cv.height=S*R; const c=cv.getContext('2d');
+    for(let i=0;i<N;i++){
+      const p=i/N; c.clearRect(0,0,S*R,S*R); c.fillStyle='#000';
+      for(let y=0;y<M;y++) for(let x=0;x<M;x++){
+        const a=Math.min(1,Math.max(0,(p*1.4-(B[y][x]+.5)/(M*M))/.4)); if(a<=0) continue;
+        if(a>=1){ c.fillRect(x*C*R,y*C*R,C*R,C*R); continue; }
+        c.save(); c.beginPath(); c.rect(x*C*R,y*C*R,C*R,C*R); c.clip();
+        c.beginPath(); c.arc((x+.5)*C*R,(y+.5)*C*R,(.18+.56*a)*C*R,0,7); c.fill(); c.restore();
+      }
+      frames.push(`url(${cv.toDataURL()})`);
+    }
+  }
+  const st=new WeakMap();
+  function set(el,p){
+    if(!ok||!el) return; let o=st.get(el); if(!o) st.set(el,o={p:1,i:-1}); o.p=p;
+    const i=Math.min(N,Math.max(0,Math.round(p*N))); if(i===o.i) return; o.i=i;
+    const s=el.style;
+    if(i>=N){ s.webkitMaskImage=s.maskImage=''; s.webkitMaskSize=s.maskSize=''; s.visibility=''; return; }
+    s.visibility=i?'':'hidden'; s.webkitMaskImage=s.maskImage=frames[i]; s.webkitMaskSize=s.maskSize=S+'px '+S+'px';
+  }
+  function to(el,p,o={}){
+    if(!el) return; if(!ok){ o.onComplete&&o.onComplete(); return; }
+    const cur=st.get(el)||{p:1}; if(cur.tw) cur.tw.kill(); if(!st.get(el)) st.set(el,cur);
+    const v={p:cur.p};
+    cur.tw=gsap.to(v,{p,duration:o.duration??.9,delay:o.delay||0,ease:o.ease||'none',onUpdate:()=>set(el,v.p),onComplete:()=>{set(el,p);o.onComplete&&o.onComplete()}});
+  }
+  /* dissolve in when it scrolls into view, dissolve away when it leaves (either direction) */
+  function reveal(el,o={}){
+    if(!ok||!window.ScrollTrigger||!el) return; set(el,0);
+    ScrollTrigger.create({trigger:o.trigger||el,start:o.start||'top 92%',end:o.end||'bottom 4%',
+      onToggle:s=>to(el,s.isActive?1:0,{duration:s.isActive?(o.duration||.9):.45,delay:s.isActive?(o.delay||0):0})});
+  }
+  return {ok,set,to,reveal};
+})();
+
 /* ---------------- scroll fx ---------------- */
 if(hasG && window.ScrollTrigger){
-  gsap.to('#shade',{opacity:.5,ease:"none",scrollTrigger:{trigger:"#shell",start:"top bottom",end:"top 20%",scrub:true}});
+  gsap.to('#shade',{opacity:.2,ease:"none",scrollTrigger:{trigger:"#shell",start:"top bottom",end:"top 20%",scrub:true}});
   if(!reduce){
     gsap.to('.hero .wrap',{yPercent:-18,opacity:.2,ease:"none",scrollTrigger:{trigger:".hero",start:"top top",end:"bottom top",scrub:true}});
-    document.querySelectorAll('[data-reveal]').forEach(el=>{
-      gsap.from(el,{y:40,opacity:0,filter:"blur(8px)",duration:1.1,ease:"expo.out",scrollTrigger:{trigger:el,start:"top 88%"}});
-    });
-    gsap.from('#term',{y:80,scale:.94,rotateX:12,transformPerspective:1200,opacity:0,duration:1.4,ease:"expo.out",scrollTrigger:{trigger:'#term',start:"top 90%"}});
+    if(Dither.ok){
+      document.querySelectorAll('[data-reveal]').forEach(el=>Dither.reveal(el,{duration:el.classList.contains('stack-wrap')?1.2:.8}));
+      Dither.reveal($('#term'),{duration:1.3});
+      Dither.reveal($('#marquees'),{duration:1});
+    } else {
+      document.querySelectorAll('[data-reveal]').forEach(el=>{
+        gsap.from(el,{y:40,opacity:0,filter:"blur(8px)",duration:1.1,ease:"expo.out",scrollTrigger:{trigger:el,start:"top 88%"}});
+      });
+      gsap.from('#term',{y:80,scale:.94,rotateX:12,transformPerspective:1200,opacity:0,duration:1.4,ease:"expo.out",scrollTrigger:{trigger:'#term',start:"top 90%"}});
+    }
   }
   // rotating iridescent border
   const term=$('#term'); const o={a:0};
@@ -1204,7 +1324,8 @@ const T = (()=>{
     b.addEventListener('click',()=>{exec(k);input.focus({preventScroll:true})});
     $('#chips').appendChild(b);
   });
-  if(hasG&&window.ScrollTrigger&&!reduce) gsap.from('#chips .chip',{y:12,opacity:0,stagger:.04,duration:.6,ease:"power3.out",scrollTrigger:{trigger:'#chips',start:"top 95%"}});
+  if(Dither.ok&&window.ScrollTrigger) document.querySelectorAll('#chips .chip').forEach((c,i)=>Dither.reveal(c,{trigger:'#chips',start:'top 96%',delay:i*.06,duration:.6}));
+  else if(hasG&&window.ScrollTrigger&&!reduce) gsap.from('#chips .chip',{y:12,opacity:0,stagger:.04,duration:.6,ease:"power3.out",scrollTrigger:{trigger:'#chips',start:"top 95%"}});
 
   window.__term={exec:(c)=>exec(c),clear:()=>{out.innerHTML=''}};
   // what the visitor is on, e.g. "macOS · Safari" or "iPhone · Chrome" (from the browser's user agent)
@@ -1262,7 +1383,7 @@ const Stack=(()=>{
   });
   let order=P.map((_,i)=>i);
   const W=()=>innerWidth*.6+260;
-  function count(){ $('#count').innerHTML=`<b>${String(order[0]+1).padStart(2,"0")}</b> / ${String(P.length).padStart(2,"0")}`; }
+  function count(){ window.__bg&&__bg.project&&__bg.project(P[order[0]]); $('#count').innerHTML=`<b>${String(order[0]+1).padStart(2,"0")}</b> / ${String(P.length).padStart(2,"0")}`; }
   function layout(instant){
     if(!hasG) return;
     order.forEach((idx,pos)=>{
@@ -1277,18 +1398,21 @@ const Stack=(()=>{
   }
   function next(dir=-1){
     const c=cards[order[0]];
-    gsap.to(c,{x:dir*W(),rotation:dir*22,opacity:0,duration:.45,ease:"power2.in",overwrite:"auto",onComplete:()=>{
-      order.push(order.shift());
-      gsap.set(c,{x:0,y:(P.length-1)*16+30,rotation:0,opacity:0});
-      layout();
-    }});
+    const after=()=>{ order.push(order.shift()); gsap.set(c,{x:0,y:(P.length-1)*16+30,rotation:0,opacity:0}); Dither.set(c,1); layout(); };
+    if(Dither.ok){
+      // the card breaks up into dots and drops back into the field
+      const r=c.getBoundingClientRect(); window.__bg&&__bg.ripple&&__bg.ripple(r.left+r.width/2+dir*60,r.top+r.height*.45,1.2);
+      gsap.to(c,{x:"+="+dir*90,y:"+=46",rotation:dir*7,duration:.6,ease:"power1.in",overwrite:"auto"});
+      Dither.to(c,0,{duration:.6,onComplete:after});
+    } else gsap.to(c,{x:dir*W(),rotation:dir*22,opacity:0,duration:.45,ease:"power2.in",overwrite:"auto",onComplete:after});
     // bring next up a touch early
     const n=cards[order[1]]; if(n) gsap.to(n,{scale:1,y:0,rotation:0,filter:"brightness(1)",duration:.5,ease:"expo.out",overwrite:"auto"});
   }
   function prev(){
     const last=order.pop(); order.unshift(last);
-    const c=cards[last]; gsap.set(c,{x:-W(),rotation:-22,opacity:0,zIndex:P.length+1});
-    layout();
+    const c=cards[last];
+    if(Dither.ok){ gsap.set(c,{x:-70,y:-30,rotation:-6,opacity:1,zIndex:P.length+1}); Dither.set(c,0); layout(); Dither.to(c,1,{duration:.6}); }
+    else { gsap.set(c,{x:-W(),rotation:-22,opacity:0,zIndex:P.length+1}); layout(); }
   }
   function goTo(i){
     if(!hasG) return cards[i].scrollIntoView({inline:"center",block:"nearest"});
@@ -1352,7 +1476,7 @@ const svgIcon=k=>{const i=ICONS[k]; return i?`<svg viewBox="${i.vb}" aria-hidden
     m.innerHTML=`<div class="mtrack" style="--dur:${38+ri*10}s">${one}<div class="dup" style="display:contents" aria-hidden="true">${one}</div></div>`;
     root.appendChild(m);
   });
-  if(hasG&&!reduce&&window.ScrollTrigger) gsap.from('#marquees .marquee',{opacity:0,y:30,duration:1,stagger:.12,ease:"expo.out",scrollTrigger:{trigger:'#marquees',start:"top 88%"}});
+  if(!Dither.ok&&hasG&&!reduce&&window.ScrollTrigger) gsap.from('#marquees .marquee',{opacity:0,y:30,duration:1,stagger:.12,ease:"expo.out",scrollTrigger:{trigger:'#marquees',start:"top 88%"}});
 })();
 
 /* ---------------- contact ---------------- */
@@ -1369,7 +1493,8 @@ const svgIcon=k=>{const i=ICONS[k]; return i?`<svg viewBox="${i.vb}" aria-hidden
     el.innerHTML=`<span class="ib">${svgIcon(c.icon)}</span><span class="cl">${esc(c.key)}${live?"":" · soon"}</span>`;
     list.appendChild(el);
   });
-  if(hasG&&!reduce&&window.ScrollTrigger)
+  if(Dither.ok&&window.ScrollTrigger) document.querySelectorAll('#clist .cicon').forEach((c,i)=>Dither.reveal(c,{trigger:'#clist',start:'top 94%',end:'bottom 0%',delay:i*.1,duration:.7}));
+  else if(hasG&&!reduce&&window.ScrollTrigger)
     gsap.from('#clist .cicon',{y:30,opacity:0,duration:.9,ease:"expo.out",stagger:.08,scrollTrigger:{trigger:'#clist',start:"top 90%"}});
 })();
 
