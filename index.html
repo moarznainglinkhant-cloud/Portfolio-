@@ -513,16 +513,17 @@ const isUrl = s => /^https?:\/\//.test(s||"");
     float e=min(min(pc.x,r.x-pc.x),min(pc.y,r.y-pc.y))/r.y; v*=smoothstep(0.,.25,e);
     // twinkle
     float tw=h(pid+floor(t*5.)); v*=1.-.25*step(.93,tw);
-    // thin out pixels around key text so it stays easy to read
+    // dim (rather than remove) pixels behind key text, fading gradually so there's no cut-out outline
     float k=0.;
-    for(int i=0;i<8;i++){vec4 C=calm[i]; if(C.z>C.x){vec2 q2=max(max(C.xy-pc,pc-C.zw),0.); k=max(k,smoothstep(px*12.,px*2.,length(q2)));}}
-    v*=1.-.96*k;
+    for(int i=0;i<8;i++){vec4 C=calm[i]; if(C.z>C.x){vec2 q2=max(max(C.xy-pc,pc-C.zw),0.); k=max(k,1.-smoothstep(0.,px*30.,length(q2)));}}
+    k*=k;              // long, soft falloff: no visible edge
+    v*=1.-.3*k;
     v=clamp(v,0.,1.);
     float on=step(b8(pid)+.5/64.,v);
     vec2 l=fract(fc/px)-.5; float m=1.;
     if(shape>.5&&shape<1.5) m=smoothstep(.5,.38,length(l));
     else if(shape>1.5) m=smoothstep(.5,.4,abs(l.x)+abs(l.y));
-    vec3 c=col*on*m*.58 + col*v*.035;     // soft glow haze under the pixels
+    vec3 c=(col*on*m*.58 + col*v*.035)*(1.-.8*k);     // soft glow haze under the pixels
     gl_FragColor=vec4(c,1.);
   }`;
   const vs=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
