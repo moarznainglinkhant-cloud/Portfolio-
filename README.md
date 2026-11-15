@@ -2,7 +2,7 @@
 
 Personal portfolio of **Moarz Naing Lin Khant**, second-year Computer Science Specialist at the University of Toronto.
 
-A single self-contained HTML page: a Pixel Blast–style WebGL background, a working mini zsh (try `help`, then `ls /usr/games`), a swipeable project card stack, and contact links.
+A single self-contained HTML page: a Pixel Blast–style WebGL background, a working mini zsh (try `help`, then `ls /usr/games`), a draggable desktop of project windows (with a dock, “tidy up”, and a quick-look view), and contact links.
 
 ## Run it
 
