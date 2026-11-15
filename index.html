@@ -402,6 +402,17 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 #vwild a.sel{background:var(--z-yellow);color:#0a0710;text-shadow:none;font-weight:600}
 #vwild .bar{flex:none;opacity:.3}
 #vwild .none{padding:0 12px;color:var(--z-red)}
+/* faint vim cheat-sheet, top right of the hero only — scrolls away with the page (keyboard users only) */
+#vkeys{position:absolute;top:34px;right:20px;z-index:40;font-size:12px;white-space:pre;color:rgba(var(--ph),.38);text-shadow:none}
+#vkeys kbd{font:inherit;color:rgba(var(--ph),.75)}
+@media (hover:none),(max-width:720px){#vkeys{display:none}}
+html.vim-trap #vkeys{display:none}
+/* command line hidden until used; the statusline sits on the bottom edge and lifts when it appears */
+#vstat{bottom:0;transition:bottom .18s ease}
+#vcmd{transform:translateY(100%);transition:transform .18s ease}
+html.cmd-on #vstat{bottom:22px}
+html.cmd-on #vcmd{transform:none}
+@media (prefers-reduced-motion:reduce){#vstat,#vcmd{transition:none}}
 #vcmd.live{color:#EDEDEF;text-shadow:none}
 #vcmd .cc{display:inline-block;width:.6em;height:1.15em;vertical-align:-.22em;background:var(--z-yellow);animation:blink 1.05s steps(1) infinite}
 #vcmd .gh{color:#5c5f66}
@@ -501,6 +512,7 @@ a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.rou
 <div class="vim" id="vgut" aria-hidden="true"></div>
 <nav class="vim" id="vstat" aria-label="Sections"><span class="mode" id="vmode" aria-hidden="true">NORMAL</span><span class="rest"><span class="seg hide-s" aria-hidden="true"> main</span><button type="button" id="vfile" aria-haspopup="true" aria-expanded="false" title="Jump to a section  ( : )">~/moarz/hero.md</button><span class="sp"></span><span class="seg" id="vshow" aria-hidden="true"></span><span class="seg hide-s" aria-hidden="true">utf-8</span><span class="seg hide-s" aria-hidden="true">unix</span><span class="seg" id="vpct" aria-hidden="true">Top</span><span class="seg" id="vpos" aria-hidden="true">1:1</span></span><span id="vwild"></span></nav>
 <div class="vim" id="vcmd" aria-hidden="true"></div>
+<div class="vim" id="vkeys" aria-hidden="true"><kbd>]]</kbd> <kbd>[[</kbd> sections  ·  <kbd>12gg</kbd> line 12  ·  <kbd>j</kbd> <kbd>k</kbd> scroll  ·  <kbd>:</kbd> jump</div>
 
 
 <script>/* project screenshots (embedded so the page stays one file) — referenced by `shot` in ME.projects */
@@ -1591,7 +1603,10 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
   addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(draw)}},{passive:true});
   addEventListener('resize',draw); draw();
 
-  let cmdT; const say=(t,ms=3200)=>{cmd.textContent=t;clearTimeout(cmdT);if(ms)cmdT=setTimeout(()=>{cmd.textContent='';},ms)};
+  /* the command line only slides in when it has something to say (`:`, -- INSERT --, messages) */
+  let cmdT; const say=(t,ms=3200)=>{cmd.textContent=t||'';clearTimeout(cmdT);if(t&&ms)cmdT=setTimeout(()=>{cmd.textContent='';},ms)};
+  const syncCmd=()=>document.documentElement.classList.toggle('cmd-on',!!cmd.textContent.trim()||document.getElementById('vstat').classList.contains('open'));
+  new MutationObserver(syncCmd).observe(cmd,{childList:true,characterData:true,subtree:true}); syncCmd();
   const setMode=(m,col)=>{mode.textContent=m; mode.style.background=col?`rgba(${col},.85)`:''};
   window.__vimMode=(m,col,cmdText)=>{setMode(m,col); if(cmdText!==undefined) say(cmdText,0);};
   const inp=document.querySelector('.term input, #termInput, .term-body input');
@@ -1645,7 +1660,7 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
   }
   function closeWild(msg,restore){
     if(!open) return; open=false; stat.classList.remove('open'); cmd.classList.remove('live'); file.setAttribute('aria-expanded','false');
-    setMode('NORMAL'); cmd.textContent=''; if(restore) scrollToY(origin); if(msg) say(msg,4200);
+    setMode('NORMAL'); say(''); if(restore) scrollToY(origin); if(msg) say(msg,4200);
   }
   function commit(it){
     if(!it) return closeWild('E480: No match: '+buf.replace(/^e\s*/,''),true);
@@ -1714,10 +1729,7 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
   });
 
   /* one-time hint so people find it */
-  let hintTries=0; (function hint(){ setTimeout(()=>{
-    if(open||cmd.textContent||mode.textContent!=='NORMAL'){ if(!open&&++hintTries<12) hint(); return; }
-    file.classList.add('nudge'); say(touch?'tap the statusline to jump anywhere':'press  :  to jump anywhere   ·   :help for vim motions',8000);
-  }, hintTries?2000:5000); })();
+  setTimeout(()=>file.classList.add('nudge'),5000);
 
   document.addEventListener('selectionchange',()=>{
     if(document.activeElement===inp||open) return;
