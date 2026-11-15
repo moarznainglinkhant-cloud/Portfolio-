@@ -210,13 +210,35 @@ html.vim-trap,html.vim-trap body{overflow:hidden;overscroll-behavior:none}
 .ql .dshot{aspect-ratio:16/10}
 .ql .dmeta{padding:22px 24px}
 .ql .dmeta h3{font-size:26px}
+.dtrack{display:contents}
+.menubar .mc,.m-only{display:none}
+@media (hover:none){.dopen span{display:none}}
 @media (max-width:760px){
-  .desk{height:auto;padding:44px 12px 12px;display:flex;flex-direction:column;gap:14px}
-  .desk .dwin{position:relative;width:100%;transform:none!important;opacity:1!important}
-  .desk .dmeta p{display:block}
-  .desk .dbar{cursor:default}
-  .dock,.menubar .mi,.menubar button{display:none}
+  .desk{height:auto;padding-top:30px;border-radius:16px}
+  .dtrack{position:relative;display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding:22px 0 90px}
+  .dtrack::-webkit-scrollbar{display:none}
+  .dtrack::before,.dtrack::after{content:"";flex:0 0 calc(8% - 12px)}
+  .desk .dwin{position:relative;flex:0 0 84%;width:auto;transform-origin:50% 60%;scroll-snap-align:center;scroll-snap-stop:always;opacity:1!important}
+  .desk .dmeta p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:14px}
+  .desk .dmeta{padding:14px 16px 16px}
+  .desk .dmeta h3{font-size:19px}
+  .desk .dbar{cursor:pointer}
+  .menubar .mi,.menubar button{display:none}
+  .menubar .mc{display:inline;color:var(--muted)}
+  .d-only{display:none}.m-only{display:inline}
+  .dock{bottom:14px;gap:10px;padding:7px 9px;border-radius:16px}
+  .dock button{width:40px;height:40px;border-radius:11px;transition:border-color .2s}
+  .dock button .ic{border-radius:10px}
+  .dock button::after{display:none}
+  .dock button .dot{opacity:0;transition:opacity .2s}
+  .dock button.on{border-color:rgba(255,255,255,.55)}
+  .dock button.on .dot{opacity:1}
+  .ql{place-items:end center;padding:0}
+  .ql .dwin{width:100%;max-height:88vh;border-radius:18px 18px 0 0;border-bottom:0}
   .ql .qbody{grid-template-columns:1fr}
+  .ql .dmeta{padding:18px 20px 28px}
+  .ql .dmeta h3{font-size:22px}
+}
 }
 .round{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background .2s,border-color .2s,transform .15s}
 .round:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28)}
@@ -445,11 +467,11 @@ a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.rou
     <div class="proj-head">
       <div class="label" data-reveal><b>02</b> projects</div>
       <h2 data-reveal>Things I've built.</h2>
-      <p class="sub" data-reveal>Drag the windows around by their title bars, click one to open it, or jump to any project from the dock.</p>
+      <p class="sub" data-reveal><span class="d-only">Drag the windows around by their title bars, click one to open it, or jump to any project from the dock.</span><span class="m-only">Swipe through the windows, tap one to open it, or jump around with the dock.</span></p>
       <p class="hint" data-reveal>// tip: try <span class="c-g">open 2</span> in the terminal</p>
     </div>
     <div class="desk" id="desk" data-reveal aria-label="Projects desktop">
-      <div class="menubar"><b>moarz</b><span class="mi">projects/</span><span class="mi">File</span><span class="mi">Edit</span><span class="mi">View</span><span class="mi">Window</span><span class="sp"></span><button type="button" id="tidy" aria-pressed="false">tidy up</button><span id="clock"></span></div>
+      <div class="menubar"><b>moarz</b><span class="mi">projects/</span><span class="mi">File</span><span class="mi">Edit</span><span class="mi">View</span><span class="mi">Window</span><span class="mc" id="mcount">1 / 4</span><span class="sp"></span><button type="button" id="tidy" aria-pressed="false">tidy up</button><span id="clock"></span></div>
       <div class="dock" id="dock" role="toolbar" aria-label="Projects dock"></div>
     </div>
   </div>
@@ -1351,11 +1373,12 @@ const Stack=(()=>{
   const bar=(p,i,close)=>`<div class="dbar"><span class="dtl"${close?"":' aria-hidden="true"'}>${close?`<button type="button" aria-label="Close">${X}</button>`:`<i>${X}</i>`}<i>${MIN}</i><i>${MAX}</i></span><span class="daddr">${secure(p)?LOCK:FOLDER}${esc(addr(p,i))}</span></div>`;
 
   /* ---- windows ---- */
+  const track=document.createElement('div'); track.className='dtrack'; desk.insertBefore(track,dock);
   const ws=P.map((p,i)=>{
     const w=document.createElement('article'); w.className='dwin'; w.dataset.i=i;
     w.setAttribute('aria-label',`${p.name}, project ${i+1} of ${N}`);
     w.innerHTML=bar(p,i)+`<div class="dshot">${shot(p,i)}<button type="button" class="dopen" aria-label="Open details for ${esc(p.name)}"><span aria-hidden="true">open ↗</span></button></div>`+meta(p,i,pad(i+1));
-    desk.insertBefore(w,dock); return w;
+    track.appendChild(w); return w;
   });
   let z=10, tidy=false, launched=false, lastW=0;
   const pos=ws.map(()=>({x:0,y:0,s:1}));
@@ -1377,7 +1400,20 @@ const Stack=(()=>{
     const x0=(W-(ww*s*cols+gap*(cols-1)))/2;
     ws.forEach((w,i)=>{ pos[i]={x:x0+(i%cols)*(ww*s+gap),y:44+Math.floor(i/cols)*(wh*s+gap),s}; place(i,true); });
   }
-  function arrange(anim){ if(small()){ ws.forEach(w=>w.style.transform=""); return; } tidy?grid():scatter(anim); }
+  function arrange(anim){ if(small()){ ws.forEach(w=>w.style.transform=""); mframe(true); return; } ws.forEach(w=>w.style.filter=""); tidy?grid():scatter(anim); }
+  /* phones: a swipeable row of windows; the dock and menu bar follow along */
+  let mi=-1, mraf=0;
+  const mcount=$('#mcount');
+  function mframe(force){
+    if(!small()) return;
+    const tr=track.getBoundingClientRect(), c=tr.left+tr.width/2; let best=0, bd=1e9;
+    ws.forEach((w,i)=>{ const r=w.getBoundingClientRect(), d=(r.left+r.width/2-c)/(r.width+12), a=Math.min(Math.abs(d),1);
+      if(!reduce) w.style.transform=`scale(${1-a*.07})`; w.style.filter=`brightness(${1-a*.4})`;
+      if(Math.abs(d)<bd){bd=Math.abs(d);best=i} });
+    if(best!==mi||force){ mi=best; if(typeof dockBtns!=="undefined") dockBtns.forEach((b,i)=>{b.classList.toggle('on',i===mi);b.setAttribute('aria-current',i===mi?'true':'false')}); mcount.textContent=`${mi+1} / ${N}`; }
+  }
+  track.addEventListener('scroll',()=>{ if(mraf) return; mraf=requestAnimationFrame(()=>{mraf=0;mframe()}); },{passive:true});
+  function scrollToWin(i,smooth){ const w=ws[i]; track.scrollTo({left:w.offsetLeft-(track.clientWidth-w.offsetWidth)/2,behavior:smooth&&!reduce?'smooth':'auto'}); }
   const tidyBtn=$('#tidy');
   tidyBtn.addEventListener('click',()=>{ tidy=!tidy; tidyBtn.textContent=tidy?"scatter":"tidy up"; tidyBtn.setAttribute('aria-pressed',tidy); arrange(true); });
 
@@ -1397,7 +1433,7 @@ const Stack=(()=>{
       const up=()=>{ b.removeEventListener('pointermove',mv); b.removeEventListener('pointerup',up); b.removeEventListener('pointercancel',up); w.classList.remove('dragging'); };
       b.addEventListener('pointermove',mv); b.addEventListener('pointerup',up); b.addEventListener('pointercancel',up);
     });
-    w.addEventListener('click',e=>{ if(e.target.closest('a,.dbar')) return; QL.open(i); });
+    w.addEventListener('click',e=>{ if(e.target.closest('a')||(!small()&&e.target.closest('.dbar'))) return; if(small()&&i!==mi){ scrollToWin(i,true); return; } QL.open(i); });
   });
 
   /* ---- dock ---- */
@@ -1405,7 +1441,7 @@ const Stack=(()=>{
     const b=document.createElement('button'); b.type="button"; b.dataset.tip=p.name; b.setAttribute('aria-label',`Bring ${p.name} to the front`);
     const src=img(p);
     b.innerHTML=`<span class="ic">${src?`<img src="${src}" alt="">`:`<span class="g" style="background:linear-gradient(160deg,${p.colors[0]},${p.colors[1]})">${esc(p.glyph)}</span>`}</span><span class="dot"></span>`;
-    b.addEventListener('click',()=>bounce(i));
+    b.addEventListener('click',()=>small()?scrollToWin(i,true):bounce(i));
     dock.appendChild(b); return b;
   });
   function bounce(i){
@@ -1434,6 +1470,8 @@ const Stack=(()=>{
       const w=box.querySelector('.dwin'), a=from.getBoundingClientRect(), b=w.getBoundingClientRect();
       cur={box,w,from,ret:document.activeElement};
       requestAnimationFrame(()=>box.classList.add('on'));
+      document.documentElement.style.overflow='hidden';
+      if(!reduce&&small()) w.animate([{transform:'translateY(100%)'},{transform:'none'}],{duration:420,easing:ease});
       if(!reduce&&!small()) w.animate([{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${a.width/b.width},${a.height/b.height})`,transformOrigin:'0 0',opacity:.6},{transform:'none',transformOrigin:'0 0',opacity:1}],{duration:480,easing:ease});
       if(!small()) from.style.visibility='hidden';
       const x=w.querySelector('.dtl button'); x.focus({preventScroll:true});
@@ -1447,8 +1485,9 @@ const Stack=(()=>{
     function close(){
       if(!cur) return; const {box,w,from,ret}=cur; cur=null;
       box.classList.remove('on');
-      const done=()=>{ box.remove(); from.style.visibility=""; (ret&&ret!==document.body&&document.contains(ret)?ret:from.querySelector('.dopen')).focus({preventScroll:true}); };
-      if(reduce||small()) return done();
+      const done=()=>{ document.documentElement.style.overflow=''; box.remove(); from.style.visibility=""; (ret&&ret!==document.body&&document.contains(ret)?ret:from.querySelector('.dopen')).focus({preventScroll:true}); };
+      if(reduce) return done();
+      if(small()){ w.animate([{transform:'none'},{transform:'translateY(100%)'}],{duration:300,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).onfinish=done; return; }
       const a=from.getBoundingClientRect(), b=w.getBoundingClientRect();
       w.animate([{transform:'none',transformOrigin:'0 0',opacity:1},{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${a.width/b.width},${a.height/b.height})`,transformOrigin:'0 0',opacity:.7}],{duration:360,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}).onfinish=done;
     }
@@ -1478,7 +1517,7 @@ const Stack=(()=>{
 
   // used by the terminal: `open <n>`
   function goTo(i){
-    if(small()){ ws[i].scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"}); return; }
+    if(small()){ scrollToWin(i,false); setTimeout(()=>QL.open(i),reduce?0:700); return; }
     launch(); bounce(i);
     setTimeout(()=>QL.open(i),reduce?0:650);
   }
