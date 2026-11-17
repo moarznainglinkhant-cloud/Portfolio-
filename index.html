@@ -351,8 +351,11 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 @media (max-width:640px){.nf-logo{font-size:9px}.nf{gap:14px}}
 
 /* ---------- tech stack marquee ---------- */
-.marquees{margin:56px 0 0;display:grid;gap:16px}
-.marquee{overflow:hidden;padding:14px 0 30px;margin:-14px 0 -30px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+.marquees{position:relative;margin:56px 0 0;display:grid;gap:16px}
+.marquees::before,.marquees::after{content:"";position:absolute;top:-14px;bottom:-30px;width:13%;z-index:2;pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.marquees::before{left:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%,transparent),linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 40%,transparent),linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-composite:intersect}
+.marquees::after{right:0;-webkit-mask-image:linear-gradient(270deg,transparent,#000 40%,transparent),linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(270deg,transparent,#000 40%,transparent),linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-composite:intersect}
+.marquee{overflow:hidden;padding:14px 0 30px;margin:-14px 0 -30px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent);mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent)}
 .mtrack{display:flex;gap:14px;width:max-content;animation:marq var(--dur,46s) linear infinite}
 .marquee.rev .mtrack{animation-direction:reverse}
 .marquee:hover .mtrack{animation-play-state:paused}
@@ -364,7 +367,7 @@ footer{padding:40px 0 64px;font:13px var(--mono);color:var(--z-gray);display:fle
 .tech span.n{font:13.5px var(--mono);color:#E4E4EA;transition:color .25s}
 .tech:hover{border-color:color-mix(in srgb,var(--c) 60%,transparent);background:color-mix(in srgb,var(--c) 16%,#0c0b0f);transform:translateY(-3px);box-shadow:0 10px 30px -12px color-mix(in srgb,var(--c) 70%,transparent)}
 .tech:hover span.n{color:#fff}
-@media (prefers-reduced-motion:reduce){.mtrack{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.marquee{-webkit-mask-image:none;mask-image:none}.mtrack .dup{display:none}}
+@media (prefers-reduced-motion:reduce){.mtrack{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.marquee{-webkit-mask-image:none;mask-image:none}.marquees::before,.marquees::after{display:none}.mtrack .dup{display:none}}
 @media (max-width:640px){.tech{padding:10px 14px 10px 12px}.tech svg,.tech .bdg{width:24px;height:24px}.mtrack{gap:10px}}
 
 /* ---------- contact icons ---------- */
@@ -499,7 +502,7 @@ a:focus-visible,button:focus-visible,.btn:focus-visible,.chip:focus-visible,.rou
     <div class="label" data-reveal><b>03</b> contact</div>
     <p class="big" data-reveal>Let's build<br><span class="name" data-text="something together.">something together.</span></p>
   </div>
-  <div class="marquees" id="marquees" aria-label="Tech stack"></div>
+  <div class="wrap"><div class="marquees" id="marquees" aria-label="Tech stack"></div></div>
   <div class="wrap">
     <div class="cicons" id="clist"></div>
     <footer>
