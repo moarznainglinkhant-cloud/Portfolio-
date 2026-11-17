@@ -575,7 +575,6 @@ const ME = {
     { key:"email",    label:"moarz.linkhant@mail.utoronto.ca",            href:"mailto:moarz.linkhant@mail.utoronto.ca", copy:true, icon:"mail" },
     { key:"github",   label:"github.com/moarznainglinkhant-cloud",         href:"https://github.com/moarznainglinkhant-cloud", icon:"github" },
     { key:"linkedin", label:"linkedin.com/in/moarz-naing-lin-khant",       href:"https://www.linkedin.com/in/moarz-naing-lin-khant", icon:"linkedin" },
-    { key:"resume",   label:"resume.pdf",                                  href:"", icon:"doc" },
   ]
 };
 /* ===================================================================== */
@@ -877,7 +876,7 @@ const NF_LOGOS=(function(){
 const T = (()=>{
   const out=$('#tout'), body=$('#tbody'), input=$('#tin'), typed=$('#ttyped'), ghost=$('#tghost'), pr=$('#tprompt'), term=$('#term');
   let cwd="~", lastFail=false, busy=false, hist=[], hIdx=0;
-  const DIRS={"~":["about.md","skills.txt","contact.txt","projects/","resume.pdf",".zshrc"],"~/projects":ME.projects.map((p,i)=>slug(p.name,i)+"/")};
+  const DIRS={"~":["about.md","skills.txt","contact.txt","projects/",".zshrc"],"~/projects":ME.projects.map((p,i)=>slug(p.name,i)+"/")};
   function slug(n,i){return n.replace(/[\[\]]/g,"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||("project-"+(i+1))}
   const dirName=()=>cwd==="~"?"~":cwd.split("/").pop();
   const run=(c,l,k)=>`<span class="run${k?" "+k:""}" data-cmd="${esc(c)}">${esc(l||c)}</span>`;
