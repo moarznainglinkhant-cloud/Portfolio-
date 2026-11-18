@@ -903,16 +903,20 @@ function progressBar(cls){
   const bar=document.createElement('div'); bar.className='fx-progress '+(cls||''); document.body.appendChild(bar);
   gsap.to(bar,{scaleX:1,ease:"none",scrollTrigger:{start:0,end:"max",scrub:true}});
 }
-// scroll velocity (px/frame-ish), smoothed
-function velocity(cb){
-  let v=0;
-  gsap.ticker.add(()=>{ const raw = window.__lenis ? window.__lenis.velocity : 0; v += (raw - v)*.18; cb(v); });
-}
-// make the CSS marquees react to scroll speed
+// tech-strip marquees, driven by GSAP so they can speed up with scroll without stutter
 function marqueeBoost(){
-  const anims=()=>[...document.querySelectorAll('.mtrack')].flatMap(t=>t.getAnimations());
-  let list=anims();
-  velocity(v=>{ if(!list.length) list=anims(); const r=1+Math.min(6,Math.abs(v)*.35); list.forEach(a=>{ if(Math.abs(a.playbackRate-r)>.02) a.playbackRate=r; }); });
+  const rows=[...document.querySelectorAll('.mtrack')].map(t=>{
+    const dur=parseFloat(getComputedStyle(t).getPropertyValue('--dur'))||46, rev=!!t.closest('.marquee.rev');
+    t.style.animation='none';
+    const tw=gsap.fromTo(t,{xPercent:rev?-50:0},{xPercent:rev?0:-50,duration:dur,ease:"none",repeat:-1});
+    const row={tw,hover:1}; const m=t.closest('.marquee');
+    m.addEventListener('mouseenter',()=>gsap.to(row,{hover:0,duration:.4,overwrite:true}));
+    m.addEventListener('mouseleave',()=>gsap.to(row,{hover:1,duration:.4,overwrite:true}));
+    return row;
+  });
+  let boost=1;
+  gsap.ticker.add(()=>{ const v=window.__lenis?Math.abs(window.__lenis.velocity):0;
+    boost+=((1+Math.min(5,v*.3))-boost)*.08; rows.forEach(r=>r.tw.timeScale(Math.max(.0001,boost*r.hover))); });
 }
 
 /* ---------- cinematic: depth, scrubbed type, a pinned finale ---------- */
@@ -944,7 +948,8 @@ function cinematic(){
     {rotateX:0,scale:1,y:0,opacity:1,ease:"power2.out",scrollTrigger:{trigger:'#term',start:"top bottom",end:"top 25%",scrub:true,toggleClass:{targets:'#term',className:'fx-moving'}}});
 
   // projects desktop is unveiled through an expanding window
-  gsap.fromTo('#desk',{scale:.8,y:90,rotateX:16,opacity:0,transformPerspective:1600,transformOrigin:"50% 0%"},{scale:1,y:0,rotateX:0,opacity:1,ease:"power2.out",
+  // move + fade only: the desktop's own fly-out-of-the-dock intro measures window positions, so no scale/tilt here
+  gsap.fromTo('#desk',{y:110,opacity:0},{y:0,opacity:1,ease:"power2.out",
     scrollTrigger:{trigger:'#desk',start:"top bottom",end:"top 25%",scrub:true,toggleClass:{targets:'#desk',className:'fx-moving'}}});
 
   // finale: the contact line holds on screen and assembles
@@ -954,11 +959,8 @@ function cinematic(){
     .fromTo(big,{scale:1.25,transformOrigin:"0% 50%"},{scale:1,ease:"power2.out"},0)
     .fromTo(w,{opacity:.06,yPercent:40},{opacity:1,yPercent:0,stagger:.12,ease:"power2.out"},0);
 
-  // scroll speed: marquees race, headings lean
+  // scroll speed makes the tech strip race
   marqueeBoost();
-  const skewers=gsap.utils.toArray('section h2, section .big');
-  const set=skewers.map(el=>gsap.quickSetter(el,'skewY','deg'));
-  let last=0; velocity(v=>{ const s=Math.round(gsap.utils.clamp(-4,4,-v*.12)*20)/20; if(s!==last){ last=s; set.forEach(f=>f(s)); } });
 }
 
 
@@ -1729,20 +1731,26 @@ document.querySelector('.btn.primary').addEventListener('click',()=>setTimeout((
         pct=document.getElementById('vpct'), pos=document.getElementById('vpos'), cmd=document.getElementById('vcmd');
   const LH=22, BUF=84; // pretend buffer length; lines past it show ~
   const files=[['top','~/moarz/hero.md'],['shell','~/moarz/shell.zsh'],['projects','~/moarz/projects/'],['contact','~/moarz/contact.txt']];
-  let ticking=false, curSec='top';
+  let ticking=false, curSec='top', geo=null, lastGut='', lastPct='', lastPos='';
+  // page height + section tops, measured once and again only when layout changes
+  const measureGeo=()=>{ geo={max:Math.max(1,document.documentElement.scrollHeight-innerHeight),
+    tops:files.map(([id])=>{const el=document.getElementById(id); return el?el.getBoundingClientRect().top+scrollY:Infinity;})}; };
+  addEventListener('resize',()=>{geo=null}); addEventListener('load',()=>{geo=null});
+  if(window.ScrollTrigger) ScrollTrigger.addEventListener('refresh',()=>{geo=null; requestAnimationFrame(draw)});
   function draw(){
     ticking=false;
-    const max=Math.max(1,document.documentElement.scrollHeight-innerHeight), fr=scrollY/max;
+    if(!geo) measureGeo();
+    const max=geo.max, fr=Math.min(1,scrollY/max);
     const rows=Math.ceil(innerHeight/LH)+1, cursor=Math.round(fr*(BUF-1))+1, curRow=Math.min(rows-3,Math.max(2,Math.round(fr*(rows-4))+1));
     const top=cursor-curRow; let out='';
     for(let i=0;i<rows;i++){const ln=top+i; out+= ln<1||ln>BUF ? '~\n' : ln===cursor ? '<b>'+String(ln).padEnd(3)+'</b>\n' : Math.abs(ln-cursor)+'\n';}
-    gut.innerHTML=out;
-    pct.textContent= fr<.01?'Top':fr>.99?'Bot':Math.round(fr*100)+'%';
-    pos.textContent=cursor+':1';
-    let f=files[0][1], cur=files[0][0]; for(const [id,name] of files){const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<innerHeight*.45){f=name;cur=id;}}
+    if(out!==lastGut){ gut.innerHTML=out; lastGut=out; }
+    const pc= fr<.01?'Top':fr>.99?'Bot':Math.round(fr*100)+'%'; if(pc!==lastPct){ pct.textContent=pc; lastPct=pc; }
+    const ps=cursor+':1'; if(ps!==lastPos){ pos.textContent=ps; lastPos=ps; }
+    let f=files[0][1], cur=files[0][0]; files.forEach(([id,name],i)=>{ if(geo.tops[i]-scrollY<innerHeight*.45){f=name;cur=id;} });
     if(fr>.99) [cur,f]=files[files.length-1];
     if(file.getAttribute('aria-label')!==f) file.setAttribute('aria-label','Jump to a section. Current: '+f);
-    file.textContent=f; curSec=cur;
+    if(file.textContent!==f) file.textContent=f; curSec=cur;
   }
   addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(draw)}},{passive:true});
   addEventListener('resize',draw); draw();
